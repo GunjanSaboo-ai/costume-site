@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Convert Locations</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .upload-area {
+            border: 3px dashed #667eea;
+            padding: 40px;
+            text-align: center;
+            border-radius: 15px;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #764ba2;
+        }
+        .upload-area .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: #5a67d8;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: none;
+            margin-top: 15px;
+        }
+        .result-box {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        .result-box .num {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        .hidden {
+            display: none;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .status-info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status-error {
+            background: #fee;
+            color: #c33;
+        }
+        .status-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Convert Location Excel to JSON</h1>
+        <p>Upload your <strong>locations.xlsx</strong> file to convert.</p>
+        <p style="color: #888; font-size: 13px;">Expected columns: LOC_CODE, ALPHABET, LOC_BIN, LOC_BAG, SR_NO</p>
+
+        <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <span class="icon">📊</span>
+            <p><strong>Click to select Excel file</strong></p>
+            <p style="color: #888; font-size: 12px;">or drag and drop</p>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;" onchange="processFile(this.files[0])">
+        </div>
+
+        <div id="status" class="status hidden"></div>
+        <div id="resultBox" class="result-box hidden">
+            <div><span class="num" id="count">0</span> locations converted</div>
+            <div style="margin-top: 5px; color: #555;" id="fileInfo"></div>
+        </div>
+
+        <textarea id="jsonOutput" readonly></textarea>
+
+        <div id="buttons" class="hidden">
+            <button class="btn btn-success" onclick="downloadJSON()">📥 Download locations.json</button>
+            <button class="btn" onclick="copyJSON()">📋 Copy to Clipboard</button>
+            <button class="btn" onclick="clearAll()">🗑️ Clear</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // DRAG AND DROP SUPPORT
+        // ============================================================
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        });
+
+        // ============================================================
+        // PROCESS FILE
+        // ============================================================
+        function processFile(file) {
+            const statusDiv = document.getElementById('status');
+            const resultBox = document.getElementById('resultBox');
+
+            if (!file) {
+                showStatus('Please select a file', 'error');
+                return;
+            }
+
+            // Check file extension
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['xlsx', 'xls'].includes(ext)) {
+                showStatus('Please upload an Excel file (.xlsx or .xls)', 'error');
+                return;
+            }
+
+            showStatus(`📖 Reading ${file.name}...`, 'info');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(firstSheet);
+
+                    if (rows.length === 0) {
+                        showStatus('No data found in the Excel file', 'error');
+                        return;
+                    }
+
+                    // Shelf mapping
+                    const shelfNames = {
+                        'A': 'Top Shelf',
+                        'B': 'Second Shelf',
+                        'C': 'Third Shelf',
+                        'D': 'Fourth Shelf',
+                        'E': 'Fifth Shelf',
+                        'F': 'Bottom Shelf'
+                    };
+
+                    const locationMap = {};
+                    let processed = 0;
+
+                    rows.forEach(row => {
+                        const locCode = String(row['LOC_CODE'] || '').trim();
+                        if (!locCode) return;
+
+                        const alphabet = String(row['ALPHABET'] || '').trim();
+                        const locBin = String(row['LOC_BIN'] || '').trim();
+                        const locBag = String(row['LOC_BAG'] || '').trim();
+                        const srNo = String(row['SR_NO'] || '').trim();
+
+                        // Decode LOC_BIN
+                        let rack = '';
+                        let position = '';
+                        if (locBin) {
+                            const binStr = String(parseInt(locBin) || '');
+                            if (binStr.length >= 2) {
+                                rack = binStr.slice(0, -1);
+                                position = binStr.slice(-1);
+                            } else {
+                                rack = binStr || '0';
+                                position = '1';
+                            }
+                        }
+
+                        const shelfName = shelfNames[alphabet] || `Shelf ${alphabet}`;
+
+                        // In your converter, use:
+			locationMap[locCode] = {
+    				rack: locBag,           // LOC_BAG → Rack
+    				shelf: alphabet,        // ALPHABET → Shelf
+    				position: srNo,         // SR_NO → Position
+    				display: `Rack ${locBag}, Shelf ${alphabet}, Position ${srNo}`,
+    				shortDisplay: `${locBag} ${alphabet} ${srNo}`
+			};
+                        processed++;
+                    });
+
+                    if (processed === 0) {
+                        showStatus('No valid LOC_CODE found in the file', 'error');
+                        return;
+                    }
+
+                    // Show results
+                    const jsonString = JSON.stringify(locationMap, null, 2);
+                    document.getElementById('jsonOutput').value = jsonString;
+                    document.getElementById('jsonOutput').style.display = 'block';
+
+                    document.getElementById('count').textContent = processed;
+                    document.getElementById('fileInfo').textContent = `File: ${file.name} | Rows: ${rows.length}`;
+                    resultBox.style.display = 'block';
+
+                    document.getElementById('buttons').classList.remove('hidden');
+
+                    // Store for download
+                    window.locationJSON = jsonString;
+
+                    showStatus(`✅ Converted ${processed} locations successfully!`, 'success');
+
+                    // Show sample
+                    const sample = Object.keys(locationMap).slice(0, 3);
+                    console.log('Sample locations:', sample.map(k => `${k} → ${locationMap[k].fullAddress}`));
+
+                } catch (error) {
+                    showStatus(`❌ Error: ${error.message}`, 'error');
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ============================================================
+        // HELPERS
+        // ============================================================
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status';
+            if (type === 'info') statusDiv.classList.add('status-info');
+            if (type === 'error') statusDiv.classList.add('status-error');
+            if (type === 'success') statusDiv.classList.add('status-success');
+            statusDiv.classList.remove('hidden');
+        }
+
+        function downloadJSON() {
+            if (!window.locationJSON) return;
+            const blob = new Blob([window.locationJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'locations.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function copyJSON() {
+            if (!window.locationJSON) return;
+            navigator.clipboard.writeText(window.locationJSON).then(() => {
+                alert('✅ JSON copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textarea = document.getElementById('jsonOutput');
+                textarea.select();
+                document.execCommand('copy');
+                alert('✅ JSON copied to clipboard!');
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('jsonOutput').value = '';
+            document.getElementById('jsonOutput').style.display = 'none';
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('buttons').classList.add('hidden');
+            document.getElementById('status').classList.add('hidden');
+            window.locationJSON = null;
+        }
+
+        // ============================================================
+        // ALLOW FILE INPUT FROM CLICK
+        // ============================================================
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                processFile(this.files[0]);
+            }
+        });
+
+        console.log('✅ Location converter loaded!');
+        console.log('📂 Click the upload area to select your Excel file.');
+    </script>
+</body>
+</html>

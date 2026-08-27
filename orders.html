@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .order-id {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-pending { background: #fff3e0; color: #ff9800; }
+        .status-processing { background: #e3f2fd; color: #2196f3; }
+        .status-completed { background: #e8f5e9; color: #4caf50; }
+
+        .order-items {
+            margin: 15px 0;
+        }
+
+        .order-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .location-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-family: monospace;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .btn-process { background: #2196f3; color: white; }
+        .btn-complete { background: #4caf50; color: white; }
+        .btn-print { background: #ff9800; color: white; }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Order Management</h1>
+            <a href="dashboard.html" style="color: white; text-decoration: none;">← Back to Dashboard</a>
+        </div>
+
+        <div id="ordersList">
+            <div style="text-align: center; padding: 40px;">Loading orders...</div>
+        </div>
+    </div>
+
+    <script>
+        function loadOrders() {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const ordersList = document.getElementById('ordersList');
+            
+            if (orders.length === 0) {
+                ordersList.innerHTML = '<div style="text-align: center; padding: 40px; background: white; border-radius: 15px;">📭 No orders yet. Place an order from the dashboard!</div>';
+                return;
+            }
+            
+            ordersList.innerHTML = orders.reverse().map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-id">📋 ${order.orderId}</span>
+                        <span class="order-status status-${order.status}">${order.status.toUpperCase()}</span>
+                    </div>
+                    <div>
+                        <small>📅 ${new Date(order.date).toLocaleString()}</small><br>
+                        <small>👤 Customer: ${order.customer}</small>
+                    </div>
+                    
+                    <div class="order-items">
+                        <strong>Items (${order.items.length}):</strong>
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <div>
+                                    <strong>${item.productName}</strong><br>
+                                    <small>Size: ${item.size} | Qty: ${item.quantity}</small>
+                                </div>
+                                <div>
+                                    <span class="location-badge">📍 ${item.locationBin}</span>
+                                    <span class="location-badge">🔢 ${item.barcode}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="picking-list" style="background: #f5f5f5; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                        <strong>🎯 PICKING LOCATIONS:</strong><br>
+                        ${order.items.map(item => `📍 ${item.locationBin} → ${item.productName} (${item.size}) x${item.quantity}`).join('<br>')}
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        ${order.status === 'pending' ? `
+                            <button class="btn btn-process" onclick="updateOrderStatus('${order.orderId}', 'processing')">🔄 Mark as Processing</button>
+                        ` : ''}
+                        ${order.status === 'processing' ? `
+                            <button class="btn btn-complete" onclick="updateOrderStatus('${order.orderId}', 'completed')">✅ Mark as Completed</button>
+                        ` : ''}
+                        <button class="btn btn-print" onclick="printPickingList('${order.orderId}')">🖨️ Print Picking List</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateOrderStatus(orderId, newStatus) {
+            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const orderIndex = orders.findIndex(o => o.orderId === orderId);
+            
+            if (orderIndex !== -1) {
+                orders[orderIndex].status = newStatus;
+                localStorage.setItem('orders', JSON.stringify(orders));
+                loadOrders();
+                alert(`Order ${orderId} marked as ${newStatus}!`);
+            }
+        }
+        
+        function printPickingList(orderId) {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const order = orders.find(o => o.orderId === orderId);
+            
+            if (!order) return;
+            
+            let printContent = `
+                <html>
+                <head>
+                    <title>Picking List - ${orderId}</title>
+                    <style>
+                        body { font-family: monospace; padding: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .item { margin: 15px 0; padding: 10px; border-bottom: 1px solid #ccc; }
+                        .location { font-weight: bold; color: #1976d2; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>🎯 PICKING LIST</h2>
+                        <p>Order ID: ${orderId}</p>
+                        <p>Date: ${new Date(order.date).toLocaleString()}</p>
+                        <p>━━━━━━━━━━━━━━━━━━━━━━━━</p>
+                    </div>
+            `;
+            
+            order.items.forEach(item => {
+                printContent += `
+                    <div class="item">
+                        <div class="location">📍 LOCATION: ${item.locationBin}</div>
+                        <div>Design: ${item.designNo} - ${item.productName}</div>
+                        <div>Size: ${item.size}</div>
+                        <div>Barcode: ${item.barcode}</div>
+                        <div>Quantity: ${item.quantity}</div>
+                        <div>━━━━━━━━━━━━━━━━━━━━━━━━</div>
+                    </div>
+                `;
+            });
+            
+            printContent += `
+                    <div class="header">
+                        <p>✅ Pick items from the locations above</p>
+                        <p>📦 Scan barcodes to confirm</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        window.updateOrderStatus = updateOrderStatus;
+        window.printPickingList = printPickingList;
+        
+        loadOrders();
+    </script>
+</body>
+</html>

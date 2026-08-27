@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Dashboard - Costume Store</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .school-info {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .cart-panel {
+            position: fixed;
+            right: 20px;
+            top: 100px;
+            width: 380px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 100;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+        .cart-header {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+        }
+
+        .cart-items { padding: 15px; max-height: 350px; overflow-y: auto; }
+        .cart-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 13px; }
+        .cart-item-details { display: flex; justify-content: space-between; margin-bottom: 5px; }
+
+        .cart-summary { padding: 15px; border-top: 2px solid #eee; background: #f8f9fa; }
+        .order-btn { width: 100%; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .clear-cart-btn { width: 100%; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 5px; }
+
+        .main-content { margin-right: 410px; }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .filter-input:focus { outline: none; border-color: #667eea; }
+
+        .stats-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .stat-item { font-size: 14px; }
+        .stat-item strong { color: #667eea; font-size: 1.2rem; }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .costume-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .costume-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+
+        .image-container {
+            width: 100%;
+            height: 220px;
+            background: #f0f0f0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .costume-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .stock-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+        .stock-available { background: #4caf50; }
+        .stock-limited { background: #ff9800; }
+        .stock-none { background: #f44336; }
+
+        .costume-info { padding: 12px; }
+        .costume-name { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+        .costume-design { color: #888; font-size: 11px; margin: 3px 0; }
+
+        .size-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .size-btn {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .size-btn:hover { background: #667eea; color: white; }
+        .size-btn.disabled { opacity: 0.5; cursor: not-allowed; text-decoration: line-through; }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .page-btn.active { background: #667eea; color: white; }
+
+        .no-results { text-align: center; padding: 50px; color: #666; }
+        .loading { text-align: center; padding: 50px; color: #666; }
+
+        /* Detail Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 550px;
+            width: 90%;
+            border-radius: 15px;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-image {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .item-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        .item-detail-row .label { color: #888; }
+        .item-detail-row .value { font-weight: 500; }
+
+        .barcode-tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-family: monospace;
+        }
+
+        .location-display {
+            font-size: 12px;
+            color: #333;
+            margin-top: 2px;
+            padding: 4px 8px;
+            background: #f0f7ff;
+            border-radius: 4px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 3px solid #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .cart-panel { position: static; width: 100%; margin-bottom: 20px; }
+            .main-content { margin-right: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🎭 Costume Store</h1>
+                <p>Browse and order costumes</p>
+            </div>
+            <div>
+                <div class="school-info">
+                    🏫 <span id="schoolName"></span><br>
+                    📧 <span id="schoolEmail"></span>
+                </div>
+                <a href="logout.html" class="logout-btn" style="margin-top: 10px; display: inline-block;">🚪 Logout</a>
+            </div>
+        </div>
+
+        <!-- Cart Panel -->
+        <div class="cart-panel">
+            <div class="cart-header">
+                <span>🛒 My Order</span>
+                <span id="cartCount">0 items</span>
+            </div>
+            <div class="cart-items" id="cartItems">
+                <div style="text-align: center; color: #999; padding: 20px;">Your cart is empty</div>
+            </div>
+            <div class="cart-summary">
+                <div><strong>Total Items:</strong> <span id="totalItems">0</span></div>
+                <button class="order-btn" onclick="placeOrder()">📧 Send Order</button>
+                <button class="clear-cart-btn" onclick="clearCart()">🗑️ Clear Cart</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="filters">
+                <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by design number...">
+                <select class="filter-input" id="typeFilter"><option value="all">All Types</option></select>
+                <select class="filter-input" id="availabilityFilter">
+                    <option value="all">All Availability</option>
+                    <option value="available">In Stock</option>
+                </select>
+            </div>
+
+            <div class="stats-bar">
+                <span class="stat-item">📦 <strong id="totalDesigns">0</strong> designs</span>
+                <span class="stat-item">👕 <strong id="totalAvailable">0</strong> available</span>
+                <span class="stat-item">📅 Updated: <span id="lastUpdated">-</span></span>
+            </div>
+
+            <div class="image-grid" id="imageGrid">
+                <div class="loading">Loading costumes...</div>
+            </div>
+
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeDetailModal()">&times;</button>
+            <h3 id="modalTitle">Costume Details</h3>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CHECK LOGIN ====================
+        if (!sessionStorage.getItem('loggedIn')) {
+            window.location.href = 'login.html';
+        }
+        
+        document.getElementById('schoolName').textContent = sessionStorage.getItem('schoolName') || 'School';
+        document.getElementById('schoolEmail').textContent = sessionStorage.getItem('schoolEmail') || 'No email';
+
+        // ==================== DATA ====================
+        let inventoryData = [];
+        let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
+        let currentPage = 1;
+        const itemsPerPage = 50;
+        let locationMaster = {};
+
+        // ==================== LOAD LOCATION MASTER ====================
+        async function loadLocationMaster() {
+            try {
+                const response = await fetch('/api/locations');
+                const result = await response.json();
+                if (result.success) {
+                    locationMaster = result.locations;
+                    localStorage.setItem('locationMaster', JSON.stringify(locationMaster));
+                    console.log('✅ Location master loaded:', Object.keys(locationMaster).length);
+                }
+            } catch (err) {
+                const saved = localStorage.getItem('locationMaster');
+                if (saved) {
+                    try {
+                        locationMaster = JSON.parse(saved);
+                        console.log('✅ Location master loaded from cache:', Object.keys(locationMaster).length);
+                    } catch(e) {
+                        console.log('Could not load location master');
+                    }
+                }
+            }
+        }
+
+        // ==================== GET LOCATION DISPLAY ====================
+        function getLocationDisplay(locCode) {
+            if (!locCode) return '📍 No location assigned';
+            
+            const loc = locationMaster[locCode];
+            if (loc) {
+                return `📍 ${loc.display || `Rack ${loc.rack}, Shelf ${loc.shelf}, Position ${loc.position}`}`;
+            }
+            return `📍 ${locCode} (Location not mapped)`;
+        }
+
+        // ==================== LOAD INVENTORY (WITH IMAGE FILTERING) ====================
+        function loadInventory() {
+            const saved = localStorage.getItem('inventoryData');
+            const lastUpdate = localStorage.getItem('lastInventoryUpdate');
+            
+            if (lastUpdate) {
+                document.getElementById('lastUpdated').textContent = new Date(lastUpdate).toLocaleDateString();
+            }
+            
+            if (saved) {
+                const allData = JSON.parse(saved);
+                
+                // ============================================================
+                // FILTER: Only keep designs that have images
+                // ============================================================
+                let designsWithImages = [];
+                let checked = 0;
+                const total = allData.length;
+                
+                if (total === 0) {
+                    document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded. Please contact administrator.</div>';
+                    return;
+                }
+                
+                document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Checking for images... (0/${total})</div>`;
+                
+                allData.forEach(design => {
+                    const img = new Image();
+                    const thumbPath = `images/thumbs/${design.designNo}.jpg`;
+                    
+                    const timeoutId = setTimeout(() => {
+                        // Image doesn't exist or timed out - skip
+                        checked++;
+                        updateLoadingProgress(checked, total, designsWithImages.length);
+                    }, 300);
+                    
+                    img.onload = function() {
+                        clearTimeout(timeoutId);
+                        // Image exists - keep this design
+                        designsWithImages.push(design);
+                        checked++;
+                        updateLoadingProgress(checked, total, designsWithImages.length);
+                    };
+                    img.onerror = function() {
+                        clearTimeout(timeoutId);
+                        // Image doesn't exist - skip
+                        checked++;
+                        updateLoadingProgress(checked, total, designsWithImages.length);
+                    };
+                    img.src = thumbPath;
+                });
+                
+                // ⏱️ Safety timeout: If checking takes too long, show what we have
+                setTimeout(() => {
+                    if (checked < total) {
+                        // Force finish with whatever we have
+                        inventoryData = designsWithImages;
+                        inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
+                        populateFilters();
+                        displayCostumes();
+                        updateStats();
+                        updateCartDisplay();
+                        console.log(`⚠️ Timeout: Loaded ${inventoryData.length} designs with images`);
+                    }
+                }, 10000);
+                
+                function updateLoadingProgress(checked, total, found) {
+                    document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Checking for images... (${checked}/${total}) Found: ${found}</div>`;
+                    
+                    if (checked >= total) {
+                        // All checked - done!
+                        inventoryData = designsWithImages;
+                        inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
+                        populateFilters();
+                        displayCostumes();
+                        updateStats();
+                        updateCartDisplay();
+                        console.log(`✅ Loaded ${inventoryData.length} designs with images (out of ${total} total)`);
+                    }
+                }
+                
+            } else {
+                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded. Please contact administrator.</div>';
+            }
+        }
+
+        // ==================== DISPLAY FUNCTIONS ====================
+        function populateFilters() {
+            const types = new Set();
+            inventoryData.forEach(item => {
+                if (item.garmentType) types.add(item.garmentType);
+            });
+            
+            const typeFilter = document.getElementById('typeFilter');
+            typeFilter.innerHTML = '<option value="all">All Types</option>';
+            Array.from(types).sort().forEach(type => {
+                typeFilter.innerHTML += `<option value="${type}">${type}</option>`;
+            });
+        }
+
+        function updateStats() {
+            const totalDesigns = inventoryData.length;
+            const totalAvailable = inventoryData.reduce((sum, d) => sum + d.totalPieces, 0);
+            document.getElementById('totalDesigns').textContent = totalDesigns;
+            document.getElementById('totalAvailable').textContent = totalAvailable;
+        }
+
+        function getFilteredData() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value;
+            const availabilityFilter = document.getElementById('availabilityFilter').value;
+            
+            return inventoryData.filter(item => {
+                const matchesSearch = item.designNo.toLowerCase().includes(searchTerm) || 
+                                     item.productName.toLowerCase().includes(searchTerm);
+                const matchesType = typeFilter === 'all' || item.garmentType === typeFilter;
+                const matchesAvailability = availabilityFilter === 'all' || item.totalPieces > 0;
+                return matchesSearch && matchesType && matchesAvailability;
+            });
+        }
+
+        function displayCostumes() {
+            const filtered = getFilteredData();
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageItems = filtered.slice(start, end);
+            
+            const grid = document.getElementById('imageGrid');
+            
+            if (pageItems.length === 0) {
+                grid.innerHTML = '<div class="no-results">No costumes found. Try adjusting your filters.</div>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+            
+            grid.innerHTML = pageItems.map(item => {
+                const sizeList = Object.entries(item.sizes);
+                const thumbPath = `images/thumbs/${item.designNo}.jpg`;
+                const fullPath = `images/${item.designNo}.jpg`;
+                
+                let stockClass = 'stock-available';
+                let stockText = 'In Stock';
+                if (item.totalPieces === 0) {
+                    stockClass = 'stock-none';
+                    stockText = 'Out of Stock';
+                } else if (item.totalPieces <= 2) {
+                    stockClass = 'stock-limited';
+                    stockText = 'Limited Stock';
+                }
+                
+                return `
+                    <div class="costume-card" onclick="showDetails('${item.designNo}')">
+                        <div class="image-container">
+                            <img class="costume-image" 
+                                 src="${thumbPath}" 
+                                 alt="${item.productName}"
+                                 onerror="this.onerror=null; this.src='${fullPath}'; this.onerror=function(){this.src='https://via.placeholder.com/250x220?text=📸+${item.designNo}'}">
+                            <div class="stock-overlay ${stockClass}">${stockText}</div>
+                        </div>
+                        <div class="costume-info">
+                            <div class="costume-name">${item.productName.substring(0, 35)}</div>
+                            <div class="costume-design">🔖 Design #: ${item.designNo}</div>
+                            <div class="costume-design">🎨 ${item.color || 'Various'} | 👗 ${item.garmentType || 'Costume'}</div>
+                            <div class="size-buttons">
+                                ${sizeList.map(([size, qty]) => `
+                                    <button class="size-btn ${qty === 0 ? 'disabled' : ''}" 
+                                            onclick="event.stopPropagation(); addToCart('${item.designNo}', '${size}', ${qty})"
+                                            ${qty === 0 ? 'disabled' : ''}>
+                                        ${size} (${qty})
+                                    </button>
+                                `).join('')}
+                            </div>
+                            <div style="font-size: 11px; color: #888; margin-top: 5px;">
+                                📦 ${item.totalPieces} piece${item.totalPieces !== 1 ? 's' : ''} available
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            displayPagination(totalPages);
+        }
+
+        function displayPagination(totalPages) {
+            const paginationDiv = document.getElementById('pagination');
+            if (totalPages <= 1) { paginationDiv.innerHTML = ''; return; }
+            
+            let html = '';
+            if (currentPage > 1) html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})">← Prev</button>`;
+            
+            for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            
+            if (currentPage < totalPages) html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">Next →</button>`;
+            paginationDiv.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            displayCostumes();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==================== DETAILS MODAL ====================
+        function showDetails(designNo) {
+            const design = inventoryData.find(d => d.designNo === designNo);
+            if (!design) return;
+            
+            const thumbPath = `images/thumbs/${design.designNo}.jpg`;
+            const fullPath = `images/${design.designNo}.jpg`;
+            
+            let itemsHtml = '';
+            if (design.items && design.items.length > 0) {
+                itemsHtml = design.items.map((item, index) => {
+                    const locationDisplay = getLocationDisplay(item.locCode);
+                    
+                    return `
+                        <div class="item-detail-row">
+                            <span class="label">Item ${index + 1}</span>
+                            <span class="value">
+                                Size: ${item.size || 'N/A'}
+                                ${item.tagId ? `<span class="barcode-tag">🔢 ${item.tagId}</span>` : '<span class="missing-tag">No barcode</span>'}
+                                <div class="location-display">${locationDisplay}</div>
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                itemsHtml = `
+                    <div class="info-box">
+                        ⚠️ Individual item details (barcodes/locations) not available for this design.
+                    </div>
+                `;
+            }
+            
+            const sizeSummary = Object.entries(design.sizes)
+                .map(([size, qty]) => `Size ${size}: ${qty} piece${qty !== 1 ? 's' : ''}`)
+                .join('<br>');
+            
+            document.getElementById('modalTitle').textContent = design.productName;
+            document.getElementById('modalBody').innerHTML = `
+                <img class="modal-image" src="${fullPath}" 
+                     onerror="this.src='${thumbPath}'; this.onerror=function(){this.src='https://via.placeholder.com/400x300?text=📸+${design.designNo}'}">
+                
+                <div class="item-detail-row">
+                    <span class="label">Design #</span>
+                    <span class="value">${design.designNo}</span>
+                </div>
+                <div class="item-detail-row">
+                    <span class="label">Color</span>
+                    <span class="value">${design.color || 'Various'}</span>
+                </div>
+                <div class="item-detail-row">
+                    <span class="label">Type</span>
+                    <span class="value">${design.garmentType || 'Costume'}</span>
+                </div>
+                <div class="item-detail-row">
+                    <span class="label">Total Pieces</span>
+                    <span class="value">${design.totalPieces}</span>
+                </div>
+                
+                <h4 style="margin: 15px 0 10px;">📏 Sizes Available:</h4>
+                <div class="info-box">${sizeSummary}</div>
+                
+                <h4 style="margin: 15px 0 10px;">🔢 Individual Items (Barcodes & Locations):</h4>
+                ${itemsHtml}
+                
+                <div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 8px;">
+                    <small>💡 Items with barcodes and locations can be tracked precisely in the warehouse.</small>
+                </div>
+            `;
+            
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        // ==================== CART FUNCTIONS ====================
+        function addToCart(designNo, size, availableQty) {
+            const design = inventoryData.find(d => d.designNo === designNo);
+            if (!design) return;
+            
+            if (availableQty <= 0) {
+                alert('❌ This size is currently out of stock.');
+                return;
+            }
+            
+            const qty = parseInt(prompt(`Enter quantity for ${design.productName}\nSize: ${size}\nAvailable: ${availableQty}`, '1'));
+            if (isNaN(qty) || qty < 1) return;
+            if (qty > availableQty) { alert(`Only ${availableQty} pieces available in Size ${size}`); return; }
+            
+            const existingItem = cart.find(item => item.designNo === designNo && item.size === size);
+            if (existingItem) {
+                if (existingItem.quantity + qty > availableQty) {
+                    alert(`Cannot add ${qty} more. Only ${availableQty - existingItem.quantity} remaining.`);
+                    return;
+                }
+                existingItem.quantity += qty;
+            } else {
+                cart.push({
+                    designNo: designNo,
+                    name: design.productName,
+                    size: size,
+                    quantity: qty,
+                    color: design.color || 'Various',
+                    type: design.garmentType || 'Costume'
+                });
+            }
+            
+            sessionStorage.setItem('schoolCart', JSON.stringify(cart));
+            updateCartDisplay();
+            alert(`✓ Added ${qty}x ${design.productName} (Size ${size}) to your order`);
+        }
+
+        function updateCartDisplay() {
+            const cartItemsDiv = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cartCount');
+            const totalItemsSpan = document.getElementById('totalItems');
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`;
+            totalItemsSpan.textContent = totalItems;
+            
+            if (cart.length === 0) {
+                cartItemsDiv.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">Your cart is empty</div>';
+                return;
+            }
+            
+            cartItemsDiv.innerHTML = cart.map((item, index) => `
+                <div class="cart-item">
+                    <div class="cart-item-details">
+                        <strong>${item.name.substring(0, 30)}</strong>
+                    </div>
+                    <div class="cart-item-details">
+                        <span>Size: ${item.size}</span>
+                        <span>Qty: ${item.quantity}</span>
+                    </div>
+                    <button onclick="removeFromCart(${index})" style="background:#dc3545; color:white; border:none; padding:2px 8px; border-radius:4px; margin-top:5px; font-size:11px;">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            sessionStorage.setItem('schoolCart', JSON.stringify(cart));
+            updateCartDisplay();
+        }
+
+        function clearCart() {
+            if (confirm('Clear all items from your order?')) {
+                cart = [];
+                sessionStorage.setItem('schoolCart', JSON.stringify(cart));
+                updateCartDisplay();
+            }
+        }
+
+        // ==================== PLACE ORDER ====================
+        function placeOrder() {
+            if (cart.length === 0) {
+                alert('Your cart is empty. Please add items to place an order.');
+                return;
+            }
+            
+            const schoolName = sessionStorage.getItem('schoolName');
+            const schoolEmail = sessionStorage.getItem('schoolEmail');
+            const schoolPhone = sessionStorage.getItem('schoolPhone') || 'Not provided';
+            const schoolAddress = sessionStorage.getItem('schoolAddress') || 'Not provided';
+            
+            let orderItems = cart.map(cartItem => {
+                const design = inventoryData.find(d => d.designNo === cartItem.designNo);
+                const individualItems = design?.items?.filter(item => 
+                    item.size === cartItem.size && item.status === 'available'
+                ) || [];
+                
+                if (individualItems.length > 0) {
+                    const selectedItems = individualItems.slice(0, cartItem.quantity);
+                    return {
+                        ...cartItem,
+                        items: selectedItems.map(item => ({
+                            barcode: item.tagId || 'N/A',
+                            locationCode: item.locCode || 'N/A',
+                            locationDisplay: getLocationDisplay(item.locCode)
+                        }))
+                    };
+                } else {
+                    return {
+                        ...cartItem,
+                        items: [{
+                            barcode: 'N/A (No barcode data)',
+                            locationCode: 'N/A (No location data)',
+                            locationDisplay: '📍 No location available'
+                        }]
+                    };
+                }
+            });
+            
+            let orderSummary = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏫 SCHOOL ORDER REQUEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+School Name: ${schoolName}
+Email: ${schoolEmail}
+Phone: ${schoolPhone}
+Address: ${schoolAddress}
+Order Date: ${new Date().toLocaleString()}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 ORDER ITEMS WITH BARCODES & LOCATIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+            
+            let totalItems = 0;
+            orderItems.forEach(item => {
+                totalItems += item.quantity;
+                orderSummary += `
+${item.name} (Design #${item.designNo})
+  Type: ${item.type || 'Costume'} | Color: ${item.color || 'Various'}
+  Size: ${item.size} | Quantity: ${item.quantity}
+  ────────────────────────────────────────
+  Individual Items for Picking:
+`;
+                item.items.forEach((individual, idx) => {
+                    orderSummary += `
+    Item ${idx + 1}:
+    🔢 Barcode: ${individual.barcode}
+    📍 Location: ${individual.locationDisplay}
+`;
+                });
+                orderSummary += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+            });
+            
+            orderSummary += `
+📊 ORDER SUMMARY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total Items: ${totalItems}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴 ACTION REQUIRED - WAREHOUSE PICKING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Please use the barcodes and locations above to pick the items.
+`;
+
+            const orderId = 'ORD-' + Date.now();
+            const orders = JSON.parse(localStorage.getItem('allOrders') || '[]');
+            orders.push({
+                orderId: orderId,
+                schoolName: schoolName,
+                schoolEmail: schoolEmail,
+                phone: schoolPhone,
+                address: schoolAddress,
+                date: new Date().toISOString(),
+                items: orderItems,
+                totalItems: totalItems,
+                status: 'pending',
+                orderSummary: orderSummary
+            });
+            localStorage.setItem('allOrders', JSON.stringify(orders));
+            
+            const subject = encodeURIComponent(`Order Request from ${schoolName} - ${new Date().toLocaleDateString()}`);
+            const body = encodeURIComponent(orderSummary);
+            window.location.href = `mailto:orders@costumestore.com?subject=${subject}&body=${body}`;
+            
+            cart = [];
+            sessionStorage.setItem('schoolCart', JSON.stringify(cart));
+            updateCartDisplay();
+            
+            setTimeout(() => {
+                alert(`✅ ORDER PLACED!\n\nOrder ID: ${orderId}\n\n📦 Barcodes and locations included in the email for warehouse picking.`);
+            }, 1000);
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        document.getElementById('searchInput').addEventListener('input', () => {
+            currentPage = 1;
+            displayCostumes();
+        });
+        document.getElementById('typeFilter').addEventListener('change', () => {
+            currentPage = 1;
+            displayCostumes();
+        });
+        document.getElementById('availabilityFilter').addEventListener('change', () => {
+            currentPage = 1;
+            displayCostumes();
+        });
+
+        // Close modal on outside click
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDetailModal();
+            }
+        });
+
+        // ==================== GLOBAL FUNCTIONS ====================
+        window.goToPage = goToPage;
+        window.showDetails = showDetails;
+        window.closeDetailModal = closeDetailModal;
+        window.addToCart = addToCart;
+        window.removeFromCart = removeFromCart;
+        window.clearCart = clearCart;
+        window.placeOrder = placeOrder;
+
+        // ==================== INITIALIZE ====================
+        loadLocationMaster();
+        loadInventory();
+        updateCartDisplay();
+    </script>
+</body>
+</html>

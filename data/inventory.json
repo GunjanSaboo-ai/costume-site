@@ -1,0 +1,66 @@
+{
+    "designs": [
+        {
+            "designNo": "10017",
+            "productName": "Skirt Pink",
+            "color": "Pink",
+            "groupType": "Skirt",
+            "gender": "Girls",
+            "totalPieces": 3,
+            "sizes": {
+                "20": 3
+            },
+            "images": ["10017.jpg"],
+            "items": [
+                {
+                    "barcode": "10017001",
+                    "size": "20",
+                    "locationBin": "A-01-001",
+                    "locationCode": "A-01-001",
+                    "status": "available"
+                },
+                {
+                    "barcode": "10017002",
+                    "size": "20",
+                    "locationBin": "A-01-002",
+                    "locationCode": "A-01-002",
+                    "status": "available"
+                }
+            ]
+        },
+        {
+            "designNo": "10001",
+            "productName": "Frock Blue",
+            "color": "Blue",
+            "groupType": "Frock",
+            "gender": "Girls",
+            "totalPieces": 5,
+            "sizes": {
+                "22": 5
+            },
+            "images": ["10001.jpg"],
+            "items": [
+                {
+                    "barcode": "10001001",
+                    "size": "22",
+                    "locationBin": "B-02-001",
+                    "locationCode": "B-02-001",
+                    "status": "available"
+                }
+            ]
+        }
+    ],
+    "locations": {
+        "A-01-001": {
+            "aisle": "A",
+            "rack": "01",
+            "shelf": "001",
+            "currentItem": {
+                "designNo": "10017",
+                "barcode": "10017001",
+                "size": "20"
+            }
+        }
+    },
+    "lastUpdated": "2024-01-15 10:30:00"
+}

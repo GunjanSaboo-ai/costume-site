@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active { background: #667eea; color: white; }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        .status.success { background: #e8f5e9; color: #2e7d32; display: block; }
+        .status.error { background: #fee; color: #c33; display: block; }
+        .status.info { background: #e3f2fd; color: #1976d2; display: block; }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #667eea; }
+        .stat-label { font-size: 12px; color: #888; margin-top: 5px; }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ff9800; color: white; }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .upload-area:hover { background: #f8f9ff; }
+        .upload-area.dragover { background: #e3f2fd; border-color: #764ba2; }
+        
+        .schools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .school-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .school-card .school-name { font-weight: bold; font-size: 16px; }
+        .school-card .school-email { color: #666; font-size: 13px; }
+        .school-card .school-actions { margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap; }
+        .btn-sm { padding: 4px 10px; font-size: 11px; }
+        
+        .designs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            max-height: 550px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .design-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+        .design-item:hover { background: #e3f2fd; }
+        .design-item.featured { background: #fff3e0; border-color: #ff9800; }
+        
+        .design-thumb {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #e0e0e0;
+        }
+        .design-number { font-weight: bold; font-size: 13px; }
+        .design-name { font-size: 10px; color: #666; margin-top: 3px; }
+        
+        .featured-list {
+            background: #fff3e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .featured-items { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .featured-tag {
+            background: #ff9800;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .remove-featured {
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .selected-info {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .orders-list { max-height: 500px; overflow-y: auto; }
+        .order-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ff9800;
+        }
+        .order-item-detail {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        .barcode-tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-family: monospace;
+        }
+        .location-tag {
+            display: inline-block;
+            background: #f5f5f5;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-family: monospace;
+        }
+        .missing-tag {
+            display: inline-block;
+            color: #999;
+            font-size: 11px;
+            font-style: italic;
+        }
+        
+        .preview-table { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #667eea; color: white; position: sticky; top: 0; }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            max-width: 500px;
+            width: 90%;
+            border-radius: 15px;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .barcode-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .barcode-stat-card {
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .barcode-stat-card .num { font-size: 1.5rem; font-weight: bold; }
+        .barcode-stat-card .label { font-size: 11px; color: #666; }
+        .bg-green { background: #e8f5e9; }
+        .bg-orange { background: #fff3e0; }
+        .bg-blue { background: #e3f2fd; }
+        .bg-gray { background: #f5f5f5; }
+        .text-green { color: #2e7d32; }
+        .text-orange { color: #e65100; }
+        .text-blue { color: #1976d2; }
+        
+        @media (max-width: 768px) {
+            .designs-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+            .design-thumb { height: 100px; }
+            .schools-grid { grid-template-columns: 1fr; }
+            .tabs { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Admin Dashboard</h1>
+            <div>
+                <span style="margin-right: 15px;">👤 <span id="adminName"></span></span>
+                <a href="logout.html" class="logout-btn">🚪 Logout</a>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('featured')">⭐ Featured</button>
+            <button class="tab-btn" onclick="showTab('inventory')">📊 Inventory</button>
+            <button class="tab-btn" onclick="showTab('schools')">🏫 Schools</button>
+            <button class="tab-btn" onclick="showTab('orders')">📦 Orders</button>
+        </div>
+
+        <!-- Featured Tab -->
+        <div id="featuredTab">
+            <div class="card">
+                <h2>⭐ Featured Costumes</h2>
+                <p>Select which costumes appear on the main page.</p>
+                
+                <div style="margin: 15px 0; padding: 12px; background: #e8f5e9; border-radius: 8px;">
+                    <strong>✅ Designs with Images:</strong> <span id="imageCount">0</span>
+                    <button class="btn btn-success" onclick="detectImages()" style="margin-left: 15px; padding: 5px 15px;">🔄 Detect Images</button>
+                </div>
+                
+                <div id="scanProgress" style="display:none; background: #e3f2fd; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                    <span id="scanText">Scanning...</span>
+                    <div style="width:100%; height:6px; background:#e0e0e0; border-radius:3px; margin-top:5px;">
+                        <div id="scanBar" style="height:100%; background:#667eea; border-radius:3px; width:0%; transition:width 0.3s;"></div>
+                    </div>
+                </div>
+                
+                <input type="text" class="search-box" id="searchDesign" placeholder="🔍 Search by design number..." onkeyup="filterDesigns()">
+                
+                <div class="selected-info" id="selectedInfo">Loading...</div>
+                
+                <div class="designs-grid" id="allDesignsList">Loading...</div>
+                
+                <div style="margin: 15px 0;">
+                    <button class="btn btn-primary" onclick="saveFeatured()">💾 Save Featured</button>
+                </div>
+                
+                <div class="featured-list">
+                    <h3>⭐ Featured (<span id="featuredCount">0</span>)</h3>
+                    <div class="featured-items" id="featuredItemsList">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Tab -->
+        <div id="inventoryTab" style="display: none;">
+            <div class="card">
+                <h2>📊 Upload Inventory Excel</h2>
+                <p style="margin-bottom: 15px; color: #666;">
+                    Upload your Excel file with columns: <strong>DESIGN_NO, TAG_ID, LOC_CODE, SIZE_CODE, COLOR_CODE, PRODUCT_NAME</strong>
+                </p>
+                <div class="upload-area" id="dropZone" onclick="document.getElementById('excelFile').click()">
+                    <div style="font-size: 48px;">📊</div>
+                    <p><strong>Click or Drag & Drop Excel file</strong></p>
+                    <p style="color: #888; font-size: 12px;">Supported: .xlsx, .xls</p>
+                    <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;" onchange="processExcel(this)">
+                </div>
+                <div id="status" class="status"></div>
+                <div id="stats" class="stats" style="display: none;"></div>
+                <div id="preview" class="preview-table" style="display: none;"></div>
+                <button class="btn btn-primary" onclick="saveInventory()" id="saveBtn" style="display: none;">💾 Save Inventory</button>
+                <button class="btn btn-danger" onclick="clearInventory()">🗑️ Clear Data</button>
+            </div>
+            
+            <!-- Barcode & Location Summary -->
+            <div class="card" id="barcodeSummary" style="display: none;">
+                <h2>🔢 Barcode & Location Summary</h2>
+                <div id="barcodeStats"></div>
+            </div>
+        </div>
+
+        <!-- Schools Tab -->
+        <div id="schoolsTab" style="display: none;">
+            <div class="card">
+                <h2>🏫 Registered Schools</h2>
+                <div class="schools-grid" id="schoolsList">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="ordersTab" style="display: none;">
+            <div class="card">
+                <h2>📦 School Orders</h2>
+                <div class="orders-list" id="ordersList">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit School Modal -->
+    <div id="editSchoolModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>✏️ Edit School</h2>
+            <form id="editSchoolForm">
+                <input type="hidden" id="editSchoolId">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>School Name</label>
+                    <input type="text" id="editSchoolName" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Email</label>
+                    <input type="email" id="editSchoolEmail" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Phone</label>
+                    <input type="text" id="editSchoolPhone" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Address</label>
+                    <textarea id="editSchoolAddress" rows="2" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;"></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>New Password (leave blank to keep current)</label>
+                    <input type="password" id="editSchoolPassword" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;" placeholder="Enter new password">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                    <button type="button" class="btn btn-danger" onclick="closeEditSchool()">Cancel</button>
+                </div>
+                <div id="editSchoolMessage" class="message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Place Order for School Modal -->
+    <div id="placeOrderModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>📦 Place Order for School</h2>
+            <form id="placeOrderForm">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Select School</label>
+                    <select id="orderSchoolSelect" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;"></select>
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Design Number</label>
+                    <input type="text" id="orderDesignNo" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;" placeholder="e.g., 10001">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Size</label>
+                    <input type="text" id="orderSize" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;" placeholder="e.g., 22">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Quantity</label>
+                    <input type="number" id="orderQuantity" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;" placeholder="1" min="1">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="btn btn-success">📧 Place Order</button>
+                    <button type="button" class="btn btn-danger" onclick="closePlaceOrder()">Cancel</button>
+                </div>
+                <div id="placeOrderMessage" class="message"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CHECK ADMIN LOGIN ====================
+        if (!sessionStorage.getItem('loggedIn') || sessionStorage.getItem('userRole') !== 'admin') {
+            window.location.href = 'admin-login.html';
+        }
+        document.getElementById('adminName').textContent = sessionStorage.getItem('schoolName') || 'Admin';
+
+        // ==================== GLOBAL DATA ====================
+        let allDesigns = [];
+        let featuredDesigns = [];
+        let currentInventory = null;
+        let schools = [];
+
+        // ==================== TAB SWITCHING ====================
+        function showTab(tab) {
+            document.getElementById('featuredTab').style.display = tab === 'featured' ? 'block' : 'none';
+            document.getElementById('inventoryTab').style.display = tab === 'inventory' ? 'block' : 'none';
+            document.getElementById('schoolsTab').style.display = tab === 'schools' ? 'block' : 'none';
+            document.getElementById('ordersTab').style.display = tab === 'orders' ? 'block' : 'none';
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'schools') displaySchools();
+            if (tab === 'orders') loadOrders();
+            if (tab === 'inventory') loadBarcodeSummary();
+        }
+
+        // ==================== INVENTORY PROCESSING (With TAG_ID & LOC_CODE) ====================
+        function processExcel(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status info';
+            statusDiv.innerHTML = '📖 Reading Excel file...';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    // Size mapping (Excel codes to actual sizes)
+                    const sizeMap = {
+                        '01': '18', '02': '20', '03': '22', '04': '24',
+                        '05': '26', '06': '28', '07': '30', '08': '32',
+                        '09': '34', '10': '36'
+                    };
+
+                    // Color mapping
+                    const colorMap = {
+                        '01': 'Blue', '02': 'Black', '03': 'White', '04': 'Red',
+                        '05': 'Pink', '06': 'Green', '07': 'Yellow', '08': 'Orange',
+                        '09': 'Purple', '10': 'Brown', '11': 'Multicolor', '12': 'Peach',
+                        '16': 'Brown'
+                    };
+
+                    // Garment Type mapping
+                    const typeMap = {
+                        '0003': 'Frock', '0004': 'Skirt', '0005': 'Dress',
+                        '0006': 'Top', '0007': 'Bottom'
+                    };
+
+                    // Gender mapping
+                    const genderMap = {
+                        '01': 'Girls', '02': 'Boys', '03': 'Unisex'
+                    };
+
+                    const designsMap = new Map();
+                    let totalRows = 0;
+                    let rowsWithBarcode = 0;
+                    let rowsWithLocation = 0;
+
+                    rows.forEach(row => {
+                        const designNo = row['DESIGN_NO'] ? String(row['DESIGN_NO']).trim() : null;
+                        if (!designNo) return;
+                        
+                        totalRows++;
+
+                        // 🔑 READ INDIVIDUAL ITEM DATA
+                        const tagId = row['TAG_ID'] ? String(row['TAG_ID']).trim() : '';
+                        const locCode = row['LOC_CODE'] ? String(row['LOC_CODE']).trim() : '';
+                        const srNo = row['SR_NO'] ? String(row['SR_NO']).trim() : '';
+
+                        if (tagId) rowsWithBarcode++;
+                        if (locCode) rowsWithLocation++;
+
+                        // Get product name
+                        let productName = row['PRODUCT_NAME'] || `Design ${designNo}`;
+                        if (productName.includes(' STYLE')) {
+                            productName = productName.split(' STYLE')[0];
+                        }
+
+                        // Get color
+                        const colorCode = row['COLOR_CODE'] ? String(row['COLOR_CODE']).trim() : '01';
+                        const color = colorMap[colorCode] || `Color${colorCode}`;
+                        const colorName = row['COLOR_NAME'] || color;
+
+                        // Get gender
+                        const genderCode = row['GENDER_CODE'] ? String(row['GENDER_CODE']).trim() : '01';
+                        const gender = genderMap[genderCode] || 'Girls';
+                        const genderName = row['GENDER_NAME'] || gender;
+
+                        // Get size
+                        const sizeCode = row['SIZE_CODE'] ? String(row['SIZE_CODE']).trim() : '03';
+                        const size = sizeMap[sizeCode] || sizeCode;
+                        const sizeName = row['SIZE_NAME'] || size;
+
+                        // Get garment type
+                        const itemGpCode = row['ITEM_GP_CODE'] ? String(row['ITEM_GP_CODE']).trim() : '0003';
+                        const garmentType = typeMap[itemGpCode] || 'Frock';
+                        const garmentName = row['ITEM_GP_NAME'] || garmentType;
+
+                        // Create or get design
+                        if (!designsMap.has(designNo)) {
+                            designsMap.set(designNo, {
+                                designNo: designNo,
+                                productName: productName,
+                                color: colorName,
+                                colorCode: colorCode,
+                                garmentType: garmentType,
+                                gender: genderName,
+                                sizes: {},
+                                totalPieces: 0,
+                                items: [],
+                                hasBarcodes: false,
+                                hasLocations: false
+                            });
+                        }
+
+                        const design = designsMap.get(designNo);
+
+                        // 🔑 ADD INDIVIDUAL ITEM WITH BARCODE AND LOCATION
+                        design.items.push({
+                            srNo: srNo,
+                            tagId: tagId,      // ← Garment Barcode
+                            locCode: locCode,  // ← Location Barcode
+                            size: size,
+                            sizeCode: sizeCode,
+                            status: 'available'
+                        });
+
+                        if (tagId) design.hasBarcodes = true;
+                        if (locCode) design.hasLocations = true;
+
+                        // Count sizes
+                        if (!design.sizes[size]) design.sizes[size] = 0;
+                        design.sizes[size]++;
+                        design.totalPieces++;
+                    });
+
+                    currentInventory = Array.from(designsMap.values());
+                    currentInventory.sort((a, b) => a.designNo.localeCompare(b.designNo));
+
+                    // Stats
+                    document.getElementById('stats').style.display = 'grid';
+                    document.getElementById('stats').innerHTML = `
+                        <div class="stat-card"><div class="stat-number">${currentInventory.length}</div><div class="stat-label">Unique Designs</div></div>
+                        <div class="stat-card"><div class="stat-number">${totalRows}</div><div class="stat-label">Total Garments</div></div>
+                        <div class="stat-card" style="background:#e8f5e9;"><div class="stat-number" style="color:#2e7d32;">${rowsWithBarcode}</div><div class="stat-label">✅ With Barcode (TAG_ID)</div></div>
+                        <div class="stat-card" style="background:#fff3e0;"><div class="stat-number" style="color:#e65100;">${totalRows - rowsWithBarcode}</div><div class="stat-label">⚠️ Missing Barcode</div></div>
+                        <div class="stat-card" style="background:#e8f5e9;"><div class="stat-number" style="color:#2e7d32;">${rowsWithLocation}</div><div class="stat-label">✅ With Location (LOC_CODE)</div></div>
+                        <div class="stat-card" style="background:#fff3e0;"><div class="stat-number" style="color:#e65100;">${totalRows - rowsWithLocation}</div><div class="stat-label">⚠️ Missing Location</div></div>
+                    `;
+
+                    // Preview
+                    const previewDiv = document.getElementById('preview');
+                    previewDiv.style.display = 'block';
+                    previewDiv.innerHTML = `
+                        <h4>📋 Preview (First 5 designs)</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Design No</th>
+                                    <th>Product</th>
+                                    <th>Color</th>
+                                    <th>Type</th>
+                                    <th>Sizes</th>
+                                    <th>Total</th>
+                                    <th>Barcodes</th>
+                                    <th>Locations</th>
+                                </tr>
+                            </thead>
+                            <tbody>${currentInventory.slice(0,5).map(d => `
+                                <tr>
+                                    <td>${d.designNo}</td>
+                                    <td>${d.productName.substring(0,25)}</td>
+                                    <td>${d.color}</td>
+                                    <td>${d.garmentType}</td>
+                                    <td>${Object.entries(d.sizes).map(([s,q]) => `${s}:${q}`).join(', ')}</td>
+                                    <td>${d.totalPieces}</td>
+                                    <td>${d.hasBarcodes ? '✅' : '❌'}</td>
+                                    <td>${d.hasLocations ? '✅' : '❌'}</td>
+                                </tr>
+                            `).join('')}</tbody>
+                        </table>
+                        ${currentInventory.length > 5 ? `<p style="margin-top:10px;">... and ${currentInventory.length - 5} more designs</p>` : ''}
+                        <div style="margin-top:15px; padding:12px; background:#e3f2fd; border-radius:8px; font-size:13px;">
+                            <strong>🔢 TAG_ID:</strong> Garment Barcode (unique per item) &nbsp;|&nbsp; 
+                            <strong>📍 LOC_CODE:</strong> Location Bin Barcode<br>
+                            <span style="color:#888;">Items without barcodes/locations will still be shown but marked accordingly.</span>
+                        </div>
+                    `;
+
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `✅ Loaded ${currentInventory.length} unique designs with ${totalRows} individual garments! Click Save.`;
+                    document.getElementById('saveBtn').style.display = 'inline-block';
+                    
+                    // Show barcode summary
+                    loadBarcodeSummary();
+
+                } catch (error) {
+                    const statusDiv = document.getElementById('status');
+                    statusDiv.className = 'status error';
+                    statusDiv.innerHTML = 'Error reading file: ' + error.message;
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function saveInventory() {
+            if (!currentInventory) return;
+            
+            // Send to server
+            fetch('/api/inventory/import', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentInventory)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    localStorage.setItem('inventoryData', JSON.stringify(currentInventory));
+                    localStorage.setItem('lastInventoryUpdate', new Date().toISOString());
+                    showStatus('success', `✅ Saved! ${currentInventory.length} designs available.`);
+                    loadBarcodeSummary();
+                } else {
+                    showStatus('error', '❌ Error saving to server');
+                }
+            })
+            .catch(err => {
+                showStatus('error', '❌ Error: ' + err.message);
+            });
+        }
+        
+        function clearInventory() {
+            if (confirm('⚠️ Delete all inventory data?')) {
+                localStorage.removeItem('inventoryData');
+                currentInventory = null;
+                showStatus('info', 'Inventory cleared.');
+                document.getElementById('stats').style.display = 'none';
+                document.getElementById('preview').style.display = 'none';
+                document.getElementById('saveBtn').style.display = 'none';
+                document.getElementById('barcodeSummary').style.display = 'none';
+            }
+        }
+        
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            setTimeout(() => statusDiv.style.display = 'none', 3000);
+        }
+
+        // ==================== BARCODE & LOCATION SUMMARY ====================
+        function loadBarcodeSummary() {
+            const saved = localStorage.getItem('inventoryData');
+            if (!saved) {
+                document.getElementById('barcodeSummary').style.display = 'none';
+                return;
+            }
+            
+            const inventory = JSON.parse(saved);
+            let totalItems = 0;
+            let withBarcodes = 0;
+            let withLocations = 0;
+            let designsWithBarcodes = 0;
+            let designsWithLocations = 0;
+            
+            inventory.forEach(design => {
+                let hasBarcode = false;
+                let hasLocation = false;
+                design.items.forEach(item => {
+                    totalItems++;
+                    if (item.tagId) { withBarcodes++; hasBarcode = true; }
+                    if (item.locCode) { withLocations++; hasLocation = true; }
+                });
+                if (hasBarcode) designsWithBarcodes++;
+                if (hasLocation) designsWithLocations++;
+            });
+            
+            document.getElementById('barcodeSummary').style.display = 'block';
+            document.getElementById('barcodeStats').innerHTML = `
+                <div class="barcode-stats">
+                    <div class="barcode-stat-card bg-blue">
+                        <div class="num text-blue">${totalItems}</div>
+                        <div class="label">Total Garments</div>
+                    </div>
+                    <div class="barcode-stat-card bg-green">
+                        <div class="num text-green">${withBarcodes}</div>
+                        <div class="label">✅ With Barcode (TAG_ID)</div>
+                    </div>
+                    <div class="barcode-stat-card bg-orange">
+                        <div class="num text-orange">${totalItems - withBarcodes}</div>
+                        <div class="label">⚠️ Missing Barcode</div>
+                    </div>
+                    <div class="barcode-stat-card bg-green">
+                        <div class="num text-green">${withLocations}</div>
+                        <div class="label">✅ With Location (LOC_CODE)</div>
+                    </div>
+                    <div class="barcode-stat-card bg-orange">
+                        <div class="num text-orange">${totalItems - withLocations}</div>
+                        <div class="label">⚠️ Missing Location</div>
+                    </div>
+                </div>
+                <div style="font-size:12px; color:#888; margin-top:10px;">
+                    📊 ${inventory.length} unique designs | 
+                    ${designsWithBarcodes} designs have at least one barcode | 
+                    ${designsWithLocations} designs have at least one location
+                </div>
+            `;
+        }
+
+        // ==================== FEATURED DESIGNS ====================
+        function detectImages() {
+            const savedInventory = localStorage.getItem('inventoryData');
+            if (!savedInventory) {
+                alert('⚠️ Please upload your Excel file first.\n\nGo to "Inventory" tab and upload your Excel file.');
+                return;
+            }
+            
+            const inventory = JSON.parse(savedInventory);
+            const allDesignNos = inventory.map(item => item.designNo);
+            
+            const progressDiv = document.getElementById('scanProgress');
+            progressDiv.style.display = 'block';
+            document.getElementById('scanText').textContent = `🔍 Checking ${allDesignNos.length} designs for images...`;
+            document.getElementById('scanBar').style.width = '0%';
+            
+            let foundImages = [];
+            let checked = 0;
+            const total = allDesignNos.length;
+            
+            allDesignNos.forEach((designNo) => {
+                const img = new Image();
+                const thumbPath = `images/thumbs/${designNo}.jpg`;
+                
+                const timeoutId = setTimeout(() => {
+                    if (!img.complete) {
+                        checked++;
+                        updateDetectProgress(checked, total, foundImages.length);
+                    }
+                }, 500);
+                
+                img.onload = function() {
+                    clearTimeout(timeoutId);
+                    foundImages.push(designNo);
+                    checked++;
+                    updateDetectProgress(checked, total, foundImages.length);
+                };
+                img.onerror = function() {
+                    clearTimeout(timeoutId);
+                    checked++;
+                    updateDetectProgress(checked, total, foundImages.length);
+                };
+                img.src = thumbPath;
+            });
+            
+            function updateDetectProgress(checked, total, found) {
+                const progress = Math.min((checked / total) * 100, 100);
+                document.getElementById('scanBar').style.width = progress + '%';
+                document.getElementById('scanText').textContent = `🔍 Checking ${checked}/${total}... Found ${found} with images`;
+                document.getElementById('imageCount').textContent = found;
+                
+                if (checked >= total) {
+                    setTimeout(() => {
+                        progressDiv.style.display = 'none';
+                        displayFoundImages(foundImages, inventory);
+                    }, 500);
+                }
+            }
+        }
+        
+        function displayFoundImages(foundImages, inventory) {
+            allDesigns = inventory
+                .filter(item => foundImages.includes(item.designNo))
+                .map(item => ({
+                    designNo: item.designNo,
+                    productName: item.productName || `Design ${item.designNo}`,
+                    garmentType: item.garmentType || 'Costume',
+                    color: item.color || 'Various'
+                }));
+            
+            allDesigns.sort((a, b) => a.designNo.localeCompare(b.designNo));
+            
+            const savedFeatured = localStorage.getItem('featuredDesigns');
+            featuredDesigns = savedFeatured ? JSON.parse(savedFeatured) : [];
+            
+            displayDesignsList();
+            updateFeaturedList();
+            updateSelectedInfo();
+            document.getElementById('imageCount').textContent = allDesigns.length;
+        }
+        
+        function filterDesigns() {
+            const searchTerm = document.getElementById('searchDesign').value.toLowerCase();
+            const filtered = allDesigns.filter(d => d.designNo.toLowerCase().includes(searchTerm));
+            displayDesignsList(filtered);
+        }
+        
+        function displayDesignsList(designsToShow = null) {
+            const designs = designsToShow || allDesigns;
+            const container = document.getElementById('allDesignsList');
+            
+            if (designs.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px;">No designs with images found. Click "Detect Images".</div>';
+                return;
+            }
+            
+            container.innerHTML = designs.map(design => {
+                const isFeatured = featuredDesigns.includes(design.designNo);
+                const thumbPath = `images/thumbs/${design.designNo}.jpg`;
+                const fullPath = `images/${design.designNo}.jpg`;
+                
+                return `
+                    <div class="design-item ${isFeatured ? 'featured' : ''}" onclick="toggleFeatured('${design.designNo}')">
+                        <img class="design-thumb" 
+                             src="${thumbPath}" 
+                             onerror="this.onerror=null; this.src='${fullPath}'; this.onerror=function(){this.src='https://via.placeholder.com/180x120?text=${design.designNo}'}"
+                             alt="${design.designNo}">
+                        <div class="design-number">🔖 ${design.designNo}</div>
+                        <div class="design-name">${design.productName.substring(0, 20)}</div>
+                        <div>${isFeatured ? '⭐' : '☆'}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function toggleFeatured(designNo) {
+            const index = featuredDesigns.indexOf(designNo);
+            if (index === -1) {
+                featuredDesigns.push(designNo);
+            } else {
+                featuredDesigns.splice(index, 1);
+            }
+            displayDesignsList();
+            updateFeaturedList();
+            updateSelectedInfo();
+        }
+        
+        function updateFeaturedList() {
+            const container = document.getElementById('featuredItemsList');
+            document.getElementById('featuredCount').textContent = featuredDesigns.length;
+            
+            if (featuredDesigns.length === 0) {
+                container.innerHTML = '<div style="color: #999;">No featured costumes selected.</div>';
+                return;
+            }
+            
+            container.innerHTML = featuredDesigns.map(designNo => {
+                const design = allDesigns.find(d => d.designNo === designNo);
+                const name = design ? design.productName : designNo;
+                return `
+                    <div class="featured-tag">
+                        ${designNo} - ${name.substring(0, 20)}
+                        <button class="remove-featured" onclick="event.stopPropagation(); toggleFeatured('${designNo}')">×</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateSelectedInfo() {
+            const infoDiv = document.getElementById('selectedInfo');
+            infoDiv.innerHTML = `✅ Selected: <strong>${featuredDesigns.length}</strong> designs for main page (out of ${allDesigns.length} with images)`;
+        }
+        
+        function saveFeatured() {
+            localStorage.setItem('featuredDesigns', JSON.stringify(featuredDesigns));
+            alert(`✅ Saved! ${featuredDesigns.length} designs will appear on the main page.`);
+        }
+
+        // ==================== SCHOOLS MANAGEMENT ====================
+        function loadSchools() {
+            const saved = localStorage.getItem('schools');
+            schools = saved ? JSON.parse(saved) : [];
+            return schools;
+        }
+
+        function displaySchools() {
+            loadSchools();
+            const container = document.getElementById('schoolsList');
+            const schoolList = schools.filter(s => s.role !== 'admin');
+            
+            if (schoolList.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px;">No schools registered yet.</div>';
+                return;
+            }
+            
+            container.innerHTML = schoolList.map(school => `
+                <div class="school-card">
+                    <div class="school-name">🏫 ${school.schoolName}</div>
+                    <div class="school-email">📧 ${school.email}</div>
+                    <div>📞 ${school.phone}</div>
+                    <div style="font-size:12px; color:#888; margin-top:5px;">📍 ${school.address || 'No address'}</div>
+                    <div style="font-size:11px; color:#999; margin-top:5px;">Registered: ${new Date(school.registeredDate).toLocaleDateString()}</div>
+                    <div class="school-actions">
+                        <button class="btn btn-primary btn-sm" onclick="editSchool('${school.id}')">✏️ Edit</button>
+                        <button class="btn btn-warning btn-sm" onclick="placeOrderForSchool('${school.id}')">📦 Place Order</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSchool('${school.id}')">🗑️ Delete</button>
+                        <button class="btn btn-success btn-sm" onclick="resetSchoolPassword('${school.id}')">🔑 Reset Password</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function editSchool(schoolId) {
+            const school = schools.find(s => s.id === schoolId);
+            if (!school) return;
+            
+            document.getElementById('editSchoolId').value = school.id;
+            document.getElementById('editSchoolName').value = school.schoolName;
+            document.getElementById('editSchoolEmail').value = school.email;
+            document.getElementById('editSchoolPhone').value = school.phone;
+            document.getElementById('editSchoolAddress').value = school.address || '';
+            document.getElementById('editSchoolPassword').value = '';
+            document.getElementById('editSchoolMessage').className = 'message';
+            document.getElementById('editSchoolMessage').textContent = '';
+            
+            document.getElementById('editSchoolModal').style.display = 'flex';
+        }
+
+        function closeEditSchool() {
+            document.getElementById('editSchoolModal').style.display = 'none';
+        }
+
+        document.getElementById('editSchoolForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('editSchoolId').value;
+            const school = schools.find(s => s.id === id);
+            if (!school) return;
+            
+            school.schoolName = document.getElementById('editSchoolName').value;
+            school.email = document.getElementById('editSchoolEmail').value;
+            school.phone = document.getElementById('editSchoolPhone').value;
+            school.address = document.getElementById('editSchoolAddress').value;
+            
+            const newPassword = document.getElementById('editSchoolPassword').value;
+            if (newPassword && newPassword.length >= 4) {
+                school.password = newPassword;
+            }
+            
+            localStorage.setItem('schools', JSON.stringify(schools));
+            
+            const messageDiv = document.getElementById('editSchoolMessage');
+            messageDiv.className = 'message success';
+            messageDiv.textContent = '✅ School updated successfully!';
+            
+            setTimeout(() => {
+                closeEditSchool();
+                displaySchools();
+            }, 1500);
+        });
+
+        function deleteSchool(schoolId) {
+            if (!confirm('Delete this school and all their orders?')) return;
+            schools = schools.filter(s => s.id !== schoolId);
+            localStorage.setItem('schools', JSON.stringify(schools));
+            displaySchools();
+        }
+
+        function resetSchoolPassword(schoolId) {
+            const school = schools.find(s => s.id === schoolId);
+            if (!school) return;
+            const tempPassword = Math.random().toString(36).substring(2, 8);
+            school.password = tempPassword;
+            localStorage.setItem('schools', JSON.stringify(schools));
+            alert(`✅ Password reset for ${school.schoolName}\n\nNew Password: ${tempPassword}`);
+            displaySchools();
+        }
+
+        function placeOrderForSchool(schoolId) {
+            const school = schools.find(s => s.id === schoolId);
+            if (!school) return;
+            
+            const select = document.getElementById('orderSchoolSelect');
+            select.innerHTML = `<option value="${school.id}">${school.schoolName}</option>`;
+            document.getElementById('placeOrderModal').style.display = 'flex';
+        }
+
+        function closePlaceOrder() {
+            document.getElementById('placeOrderModal').style.display = 'none';
+        }
+
+        document.getElementById('placeOrderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const schoolId = document.getElementById('orderSchoolSelect').value;
+            const school = schools.find(s => s.id === schoolId);
+            if (!school) { alert('School not found'); return; }
+            
+            const designNo = document.getElementById('orderDesignNo').value.trim();
+            const size = document.getElementById('orderSize').value.trim();
+            const quantity = parseInt(document.getElementById('orderQuantity').value) || 1;
+            
+            if (!designNo || !size) {
+                document.getElementById('placeOrderMessage').className = 'message error';
+                document.getElementById('placeOrderMessage').textContent = '❌ Please fill in design number and size';
+                return;
+            }
+            
+            const orderId = 'ORD-' + Date.now();
+            const order = {
+                orderId: orderId,
+                schoolName: school.schoolName,
+                schoolEmail: school.email,
+                date: new Date().toISOString(),
+                items: [{ 
+                    designNo: designNo, 
+                    name: `Design ${designNo}`, 
+                    size: size, 
+                    quantity: quantity, 
+                    type: 'Costume', 
+                    color: 'Various' 
+                }],
+                totalItems: quantity,
+                status: 'pending',
+                placedByAdmin: true
+            };
+            
+            const orders = JSON.parse(localStorage.getItem('allOrders') || '[]');
+            orders.push(order);
+            localStorage.setItem('allOrders', JSON.stringify(orders));
+            
+            document.getElementById('placeOrderMessage').className = 'message success';
+            document.getElementById('placeOrderMessage').textContent = `✅ Order placed for ${school.schoolName}!`;
+            
+            setTimeout(() => {
+                closePlaceOrder();
+                loadOrders();
+            }, 1500);
+        });
+
+        // ==================== ORDERS MANAGEMENT ====================
+        function loadOrders() {
+            const orders = JSON.parse(localStorage.getItem('allOrders') || '[]');
+            const container = document.getElementById('ordersList');
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px;">No orders placed yet.</div>';
+                return;
+            }
+            
+            container.innerHTML = orders.reverse().map(order => `
+                <div class="order-card" style="border-left-color: ${order.status === 'pending' ? '#ff9800' : '#4caf50'};">
+                    <div style="display:flex; justify-content:space-between; flex-wrap:wrap;">
+                        <strong>📋 ${order.orderId}</strong>
+                        <span style="background:${order.status === 'pending' ? '#fff3e0' : '#e8f5e9'}; padding:2px 10px; border-radius:12px; font-size:12px;">
+                            ${order.status.toUpperCase()}
+                        </span>
+                    </div>
+                    <div style="margin:8px 0; font-size:13px;">
+                        🏫 ${order.schoolName}<br>
+                        📧 ${order.schoolEmail}<br>
+                        📅 ${new Date(order.date).toLocaleString()}
+                        ${order.placedByAdmin ? ' 👑 (Placed by Admin)' : ''}
+                    </div>
+                    <div style="background:white; padding:10px; border-radius:8px; margin:8px 0;">
+                        <strong>📦 Items (${order.totalItems}):</strong><br>
+                        ${order.items.map(item => `
+                            <div class="order-item-detail">
+                                <strong>${item.name}</strong> (Design #${item.designNo})
+                                <div style="margin-top:3px;">
+                                    Size: ${item.size} | Quantity: ${item.quantity}
+                                </div>
+                                ${item.items && item.items.length > 0 ? `
+                                    <div style="margin-top:5px; font-size:12px; color:#666;">
+                                        <strong>🔢 Individual Items:</strong>
+                                        ${item.items.map(ind => `
+                                            <div style="padding:2px 0;">
+                                                🔢 <span class="barcode-tag">${ind.barcode || 'N/A'}</span>
+                                                📍 <span class="location-tag">${ind.locationBin || 'N/A'}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : `
+                                    <div style="font-size:12px; color:#999; margin-top:3px;">
+                                        ⚠️ No individual barcode/location data available
+                                    </div>
+                                `}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-success btn-sm" onclick="completeOrder('${order.orderId}')">✅ Mark Complete</button>
+                </div>
+            `).join('');
+        }
+
+        function completeOrder(orderId) {
+            const orders = JSON.parse(localStorage.getItem('allOrders') || '[]');
+            const order = orders.find(o => o.orderId === orderId);
+            if (order) {
+                order.status = 'completed';
+                localStorage.setItem('allOrders', JSON.stringify(orders));
+                loadOrders();
+                alert(`✅ Order ${orderId} marked as completed!`);
+            }
+        }
+
+        // ==================== DRAG & DROP ====================
+        const dropZone = document.getElementById('dropZone');
+        if (dropZone) {
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const input = document.getElementById('excelFile');
+                    input.files = files;
+                    input.onchange();
+                }
+            });
+        }
+
+        // ==================== INITIALIZE ====================
+        window.showTab = showTab;
+        window.processExcel = processExcel;
+        window.saveInventory = saveInventory;
+        window.clearInventory = clearInventory;
+        window.detectImages = detectImages;
+        window.toggleFeatured = toggleFeatured;
+        window.saveFeatured = saveFeatured;
+        window.filterDesigns = filterDesigns;
+        window.loadOrders = loadOrders;
+        window.displaySchools = displaySchools;
+        window.editSchool = editSchool;
+        window.closeEditSchool = closeEditSchool;
+        window.deleteSchool = deleteSchool;
+        window.resetSchoolPassword = resetSchoolPassword;
+        window.placeOrderForSchool = placeOrderForSchool;
+        window.closePlaceOrder = closePlaceOrder;
+        window.completeOrder = completeOrder;
+        window.loadBarcodeSummary = loadBarcodeSummary;
+        
+        // Load existing data
+        const savedInventory = localStorage.getItem('inventoryData');
+        if (savedInventory) {
+            currentInventory = JSON.parse(savedInventory);
+            loadBarcodeSummary();
+            // Auto-detect images
+            setTimeout(detectImages, 500);
+        } else {
+            displayDesignsList();
+            updateSelectedInfo();
+        }
+    </script>
+</body>
+</html>

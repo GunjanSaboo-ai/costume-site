@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Costume Store</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            color: #666;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            margin-bottom: -2px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            opacity: 0.9;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            display: block;
+        }
+
+        .message.error {
+            background: #fee;
+            color: #c33;
+            display: block;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('login')">School Login</div>
+            <div class="tab" onclick="switchTab('register')">Register School</div>
+        </div>
+
+        <div id="loginPanel">
+            <div class="login-header">
+                <h1>🏫 School Login</h1>
+                <p>Access your costume catalog</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" required placeholder="school@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter password">
+                </div>
+                
+                <button type="submit" class="login-btn">Login →</button>
+                
+                <div id="loginMessage" class="message"></div>
+            </form>
+        </div>
+
+        <div id="registerPanel" style="display: none;">
+            <div class="login-header">
+                <h1>📝 Register School</h1>
+                <p>Create account to place orders</p>
+            </div>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>School Name</label>
+                    <input type="text" id="schoolName" required placeholder="Enter school name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="schoolEmail" required placeholder="school@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="schoolPhone" required placeholder="Contact number">
+                </div>
+                
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea id="schoolAddress" rows="2" placeholder="School address"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" required placeholder="Create password">
+                </div>
+                
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="confirmPassword" required placeholder="Confirm password">
+                </div>
+                
+                <button type="submit" class="login-btn">Register →</button>
+                
+                <div id="registerMessage" class="message"></div>
+            </form>
+        </div>
+        
+        <div class="back-link">
+            <a href="index.html">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        let schools = [];
+        
+        function loadSchools() {
+            const saved = localStorage.getItem('schools');
+            if (saved) {
+                schools = JSON.parse(saved);
+            } else {
+                schools = [
+                    {
+                        id: "admin",
+                        schoolName: "Admin",
+                        email: "admin@costumestore.com",
+                        phone: "9876543210",
+                        address: "Admin Office",
+                        password: "admin123",
+                        role: "admin",
+                        registeredDate: new Date().toISOString()
+                    }
+                ];
+                localStorage.setItem('schools', JSON.stringify(schools));
+            }
+        }
+        
+        function switchTab(tab) {
+            const loginTab = document.querySelector('.tab:first-child');
+            const registerTab = document.querySelector('.tab:last-child');
+            const loginPanel = document.getElementById('loginPanel');
+            const registerPanel = document.getElementById('registerPanel');
+            
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginPanel.style.display = 'block';
+                registerPanel.style.display = 'none';
+            } else {
+                loginTab.classList.remove('active');
+                registerTab.classList.add('active');
+                loginPanel.style.display = 'none';
+                registerPanel.style.display = 'block';
+            }
+        }
+        
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const messageDiv = document.getElementById('loginMessage');
+            
+            const school = schools.find(s => s.email === email && s.password === password);
+            
+            if (school) {
+                sessionStorage.setItem('loggedIn', 'true');
+                sessionStorage.setItem('schoolId', school.id);
+                sessionStorage.setItem('schoolName', school.schoolName);
+                sessionStorage.setItem('schoolEmail', school.email);
+                sessionStorage.setItem('schoolAddress', school.address);
+                sessionStorage.setItem('userRole', school.role || 'school');
+                
+                messageDiv.className = 'message success';
+                messageDiv.textContent = '✓ Login successful! Redirecting...';
+                
+                setTimeout(() => {
+                    window.location.href = school.role === 'admin' ? 'admin.html' : 'school-dashboard.html';
+                }, 1500);
+            } else {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = '❌ Invalid email or password';
+            }
+        });
+        
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const schoolName = document.getElementById('schoolName').value;
+            const email = document.getElementById('schoolEmail').value;
+            const phone = document.getElementById('schoolPhone').value;
+            const address = document.getElementById('schoolAddress').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const messageDiv = document.getElementById('registerMessage');
+            
+            if (!schoolName || !email || !phone || !password) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = '❌ Please fill all fields';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = '❌ Passwords do not match';
+                return;
+            }
+            
+            if (password.length < 4) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = '❌ Password must be at least 4 characters';
+                return;
+            }
+            
+            if (schools.some(s => s.email === email)) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = '❌ This email is already registered';
+                return;
+            }
+            
+            const newSchool = {
+                id: 'SCH' + Date.now(),
+                schoolName: schoolName,
+                email: email,
+                phone: phone,
+                address: address,
+                password: password,
+                role: 'school',
+                registeredDate: new Date().toISOString()
+            };
+            
+            schools.push(newSchool);
+            localStorage.setItem('schools', JSON.stringify(schools));
+            
+            messageDiv.className = 'message success';
+            messageDiv.textContent = '✓ Registration successful! You can now login.';
+            
+            document.getElementById('registerForm').reset();
+            
+            setTimeout(() => {
+                switchTab('login');
+                document.getElementById('loginEmail').value = email;
+            }, 2000);
+        });
+        
+        loadSchools();
+        window.switchTab = switchTab;
+    </script>
+</body>
+</html>
