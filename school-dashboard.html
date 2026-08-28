@@ -356,8 +356,9 @@
         // SUPABASE CONFIG
         // ============================================================
         const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
+        // 🔴 REPLACE WITH YOUR ACTUAL SUPABASE ANON KEY:
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg
-'; // 🔴 REPLACE WITH YOUR ACTUAL KEY!
+';
 
         // ============================================================
         // IMAGE PATH
@@ -408,22 +409,12 @@
         // GET LOCATION DISPLAY
         // ============================================================
         function getLocationDisplay(locCode) {
-            if (!locCode || locCode === '' || locCode === 'N/A' || locCode === 'undefined') {
+            if (!locCode || locCode === '' || locCode === 'N/A') {
                 return '📍 No location assigned';
             }
             
             const code = String(locCode).trim();
             let loc = locationMaster[code];
-            
-            if (!loc) {
-                try {
-                    const saved = localStorage.getItem('locationMaster');
-                    if (saved) {
-                        const allLocs = JSON.parse(saved);
-                        loc = allLocs[code];
-                    }
-                } catch(e) {}
-            }
             
             if (loc) {
                 if (loc.display) return `📍 ${loc.display}`;
@@ -439,10 +430,25 @@
         }
 
         // ============================================================
-        // GET IMAGE LIST FROM SUPABASE TABLE (INSTANT!)
+        // LOAD INVENTORY - READ FROM SUPABASE TABLE
         // ============================================================
-        async function getImageListFromSupabase() {
+        async function loadInventory() {
+            console.log('📦 Loading inventory...');
+            
+            const saved = localStorage.getItem('inventoryData');
+            if (!saved) {
+                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded. Please contact administrator.</div>';
+                return;
+            }
+
+            const allData = JSON.parse(saved);
+            console.log('📦 Total designs in inventory:', allData.length);
+
+            // ✅ Read image list from Supabase
+            let designsWithImages = [];
+            
             try {
+                console.log('🔍 Fetching image list from Supabase...');
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/image_list?select=design_no`, {
                     method: 'GET',
                     headers: {
@@ -452,57 +458,35 @@
                 });
                 
                 const data = await response.json();
+                console.log('📸 Supabase response:', data);
+                
                 if (data && data.length > 0) {
-                    return data.map(item => item.design_no);
+                    designsWithImages = data.map(item => item.design_no);
+                    console.log(`✅ Found ${designsWithImages.length} images in Supabase`);
+                } else {
+                    console.log('⚠️ No images found in Supabase table');
                 }
-                return [];
             } catch (err) {
-                console.error('Error loading image list from Supabase:', err);
-                return [];
-            }
-        }
-
-        // ============================================================
-        // LOAD INVENTORY - INSTANT! (No image checking)
-        // ============================================================
-        async function loadInventory() {
-            const saved = localStorage.getItem('inventoryData');
-            const lastUpdate = localStorage.getItem('lastInventoryUpdate');
-            
-            if (lastUpdate) {
-                document.getElementById('lastUpdated').textContent = new Date(lastUpdate).toLocaleDateString();
+                console.error('❌ Error loading from Supabase:', err);
+                console.log('🔍 Falling back to showing all designs');
             }
             
-            if (!saved) {
-                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded. Please contact administrator.</div>';
-                return;
-            }
-
-            const allData = JSON.parse(saved);
-            
-            // ✅ Read image list from Supabase TABLE (INSTANT - no image checking!)
-            const designsWithImages = await getImageListFromSupabase();
-            
+            // ✅ If we have images, filter inventory
             if (designsWithImages.length > 0) {
                 inventoryData = allData.filter(item => designsWithImages.includes(item.designNo));
-                inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
-                
-                populateFilters();
-                displayCostumes();
-                updateStats();
-                updateCartDisplay();
-                
-                console.log(`✅ Fast load: ${inventoryData.length} designs with images (INSTANT!)`);
-                return;
+                console.log(`✅ Showing ${inventoryData.length} designs with images`);
+            } else {
+                // If no images in Supabase, show ALL designs (fallback)
+                inventoryData = allData;
+                console.log('⚠️ No images in Supabase, showing all designs');
             }
             
-            // ❌ No image list - show message
-            document.getElementById('imageGrid').innerHTML = `
-                <div class="no-results">
-                    ⚠️ No image list found. Please ask admin to run "Detect Images".<br><br>
-                    <small>This only needs to be done once when images are added.</small>
-                </div>
-            `;
+            inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
+            
+            populateFilters();
+            displayCostumes();
+            updateStats();
+            updateCartDisplay();
         }
 
         // ==================== DISPLAY FUNCTIONS ====================
