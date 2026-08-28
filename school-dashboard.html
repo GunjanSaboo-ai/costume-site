@@ -353,29 +353,37 @@
         document.getElementById('schoolEmail').textContent = sessionStorage.getItem('schoolEmail') || 'No email';
 
         // ============================================================
-        // IMAGE PATH DETECTION - Works locally AND on Render
+        // IMAGE PATH DETECTION - Supabase + Local
         // ============================================================
         const isLive = window.location.hostname !== 'localhost' && 
                        window.location.hostname !== '127.0.0.1';
 
-        // 🔴 CHANGE THIS TO YOUR SUPABASE URL:
         const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
         const BUCKET_NAME = 'costume-images';
 
         const IMAGE_BASE = isLive 
-            ? `https://vpvewqyfbtqpckcjlxsg.supabase.co/storage/v1/object/public/costume-images/` 
+            ? `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/` 
             : '/images/thumbs/';
 
-        console.log(`📸 Image source: ${isLive ? 'Supabase' : 'Local'}`);
+        // ============================================================
+        // STEP 1: SCAN IMAGES - Get all design numbers from Supabase
+        // ============================================================
+        // We need to know which images exist. Since we can't list files from Supabase,
+        // we'll use a list of design numbers from inventory and check each one.
+        // OR we can use the list you already have.
 
-        // ==================== DATA ====================
+        // ============================================================
+        // DATA
+        // ============================================================
         let inventoryData = [];
         let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
         let currentPage = 1;
         const itemsPerPage = 50;
         let locationMaster = {};
 
-        // ==================== LOAD LOCATION MASTER ====================
+        // ============================================================
+        // LOAD LOCATION MASTER
+        // ============================================================
         async function loadLocationMaster() {
             try {
                 const response = await fetch('/api/locations');
@@ -398,7 +406,9 @@
             }
         }
 
-        // ==================== GET LOCATION DISPLAY ====================
+        // ============================================================
+        // GET LOCATION DISPLAY - From location master
+        // ============================================================
         function getLocationDisplay(locCode) {
             if (!locCode) return '📍 No location assigned';
             
@@ -409,8 +419,35 @@
             return `📍 ${locCode} (Location not mapped)`;
         }
 
-        // ==================== LOAD INVENTORY ====================
-        function loadInventory() {
+        // ============================================================
+        // STEP 1: SCAN IMAGES - Check if image exists on Supabase
+        // ============================================================
+        function checkImageExists(designNo) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const imageUrl = `${IMAGE_BASE}${designNo}.jpg`;
+                
+                img.onload = function() {
+                    resolve(true);
+                };
+                img.onerror = function() {
+                    resolve(false);
+                };
+                img.src = imageUrl;
+                
+                // Timeout after 3 seconds
+                setTimeout(() => {
+                    if (!img.complete) {
+                        resolve(false);
+                    }
+                }, 3000);
+            });
+        }
+
+        // ============================================================
+        // STEP 2: LOAD INVENTORY - IMAGE FIRST LOGIC
+        // ============================================================
+        async function loadInventory() {
             const saved = localStorage.getItem('inventoryData');
             const lastUpdate = localStorage.getItem('lastInventoryUpdate');
             
@@ -418,17 +455,66 @@
                 document.getElementById('lastUpdated').textContent = new Date(lastUpdate).toLocaleDateString();
             }
             
-            if (saved) {
-                inventoryData = JSON.parse(saved);
-                inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
-                
-                populateFilters();
-                displayCostumes();
-                updateStats();
-                updateCartDisplay();
-                console.log(`✅ Loaded ${inventoryData.length} designs`);
-            } else {
+            if (!saved) {
                 document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded. Please contact administrator.</div>';
+                return;
+            }
+
+            const allData = JSON.parse(saved);
+            
+            // Show loading
+            document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Scanning for images...</div>`;
+
+            // ============================================================
+            // STEP 1: SCAN IMAGES - Check each design for image
+            // ============================================================
+            console.log('📸 Scanning images...');
+            let designsWithImages = [];
+            let checked = 0;
+            const total = allData.length;
+
+            for (const design of allData) {
+                const hasImage = await checkImageExists(design.designNo);
+                checked++;
+                
+                if (hasImage) {
+                    designsWithImages.push(design);
+                }
+                
+                // Update progress every 10 items
+                if (checked % 10 === 0 || checked === total) {
+                    document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Scanning images... (${checked}/${total}) Found: ${designsWithImages.length}</div>`;
+                }
+            }
+
+            console.log(`📸 Found ${designsWithImages.length} designs with images out of ${total}`);
+
+            // ============================================================
+            // STEP 3: INVENTORY DATA - Only keep designs with images
+            // ============================================================
+            inventoryData = designsWithImages;
+            inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
+
+            // ============================================================
+            // STEP 4: ADD LOCATION DATA - From location master
+            // ============================================================
+            // Location data is added dynamically when showing details
+            // via the getLocationDisplay() function
+
+            populateFilters();
+            displayCostumes();
+            updateStats();
+            updateCartDisplay();
+            
+            console.log(`✅ Loaded ${inventoryData.length} designs with images`);
+
+            if (inventoryData.length === 0) {
+                document.getElementById('imageGrid').innerHTML = `
+                    <div class="no-results">
+                        ⚠️ No designs with images found.<br><br>
+                        Please upload images to Supabase or check your connection.
+                    </div>
+                `;
             }
         }
 
@@ -484,9 +570,7 @@
             
             grid.innerHTML = pageItems.map(item => {
                 const sizeList = Object.entries(item.sizes);
-                // ✅ Use IMAGE_BASE for thumbnails
                 const thumbPath = `${IMAGE_BASE}${item.designNo}.jpg`;
-                const fullPath = `${IMAGE_BASE}${item.designNo}.jpg`;
                 const placeholder = `https://via.placeholder.com/250x220?text=📸+${item.designNo}`;
                 
                 let stockClass = 'stock-available';
@@ -559,13 +643,13 @@
             const design = inventoryData.find(d => d.designNo === designNo);
             if (!design) return;
             
-            // ✅ Use IMAGE_BASE for full image
             const imagePath = `${IMAGE_BASE}${design.designNo}.jpg`;
             const placeholder = `https://via.placeholder.com/400x300?text=📸+${design.designNo}`;
             
             let itemsHtml = '';
             if (design.items && design.items.length > 0) {
                 itemsHtml = design.items.map((item, index) => {
+                    // ✅ Get location from location master
                     const locationDisplay = getLocationDisplay(item.locCode);
                     
                     return `
