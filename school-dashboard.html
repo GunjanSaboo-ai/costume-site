@@ -439,7 +439,7 @@
         }
 
         // ============================================================
-        // GET IMAGE LIST FROM SUPABASE TABLE (FAST!)
+        // GET IMAGE LIST FROM SUPABASE TABLE (INSTANT!)
         // ============================================================
         async function getImageListFromSupabase() {
             try {
@@ -463,7 +463,7 @@
         }
 
         // ============================================================
-        // LOAD INVENTORY - READ IMAGE LIST FROM SUPABASE (FAST!)
+        // LOAD INVENTORY - INSTANT! (No image checking)
         // ============================================================
         async function loadInventory() {
             const saved = localStorage.getItem('inventoryData');
@@ -480,7 +480,7 @@
 
             const allData = JSON.parse(saved);
             
-            // ✅ Read image list from Supabase TABLE (FAST!)
+            // ✅ Read image list from Supabase TABLE (INSTANT - no image checking!)
             const designsWithImages = await getImageListFromSupabase();
             
             if (designsWithImages.length > 0) {
@@ -492,15 +492,15 @@
                 updateStats();
                 updateCartDisplay();
                 
-                console.log(`✅ Fast load: ${inventoryData.length} designs with images (from Supabase)`);
+                console.log(`✅ Fast load: ${inventoryData.length} designs with images (INSTANT!)`);
                 return;
             }
             
             // ❌ No image list - show message
             document.getElementById('imageGrid').innerHTML = `
                 <div class="no-results">
-                    ⚠️ No image list found. Please contact admin.<br><br>
-                    <small>Admin needs to run "Detect Images" in the admin panel.</small>
+                    ⚠️ No image list found. Please ask admin to run "Detect Images".<br><br>
+                    <small>This only needs to be done once when images are added.</small>
                 </div>
             `;
         }
