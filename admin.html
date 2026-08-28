@@ -468,11 +468,60 @@
         }
         document.getElementById('adminName').textContent = sessionStorage.getItem('schoolName') || 'Admin';
 
-        // ==================== GLOBAL DATA ====================
+        // ============================================================
+        // SUPABASE CONFIG
+        // ============================================================
+        const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg
+'; // 🔴 REPLACE WITH YOUR ACTUAL KEY!
+
+        // ============================================================
+        // GLOBAL DATA
+        // ============================================================
         let allDesigns = [];
         let featuredDesigns = [];
         let currentInventory = null;
         let schools = [];
+
+        // ============================================================
+        // SAVE IMAGE LIST TO SUPABASE TABLE
+        // ============================================================
+        async function saveImageListToSupabase(images) {
+            try {
+                // First, clear existing data
+                await fetch(`${SUPABASE_URL}/rest/v1/image_list?design_no=neq.`, {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                
+                // Then insert new images in batches (50 at a time)
+                const batchSize = 50;
+                for (let i = 0; i < images.length; i += batchSize) {
+                    const batch = images.slice(i, i + batchSize);
+                    const insertData = batch.map(designNo => ({ design_no: designNo }));
+                    
+                    await fetch(`${SUPABASE_URL}/rest/v1/image_list`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify(insertData)
+                    });
+                }
+                
+                console.log(`✅ Saved ${images.length} images to Supabase`);
+                return true;
+            } catch (err) {
+                console.error('❌ Error saving to Supabase:', err);
+                return false;
+            }
+        }
 
         // ==================== TAB SWITCHING ====================
         function showTab(tab) {
@@ -489,7 +538,7 @@
             if (tab === 'inventory') loadBarcodeSummary();
         }
 
-        // ==================== INVENTORY PROCESSING (With TAG_ID & LOC_CODE) ====================
+        // ==================== INVENTORY PROCESSING ====================
         function processExcel(input) {
             const file = input.files[0];
             if (!file) return;
@@ -506,14 +555,12 @@
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(firstSheet);
                     
-                    // Size mapping (Excel codes to actual sizes)
                     const sizeMap = {
                         '01': '18', '02': '20', '03': '22', '04': '24',
                         '05': '26', '06': '28', '07': '30', '08': '32',
                         '09': '34', '10': '36'
                     };
 
-                    // Color mapping
                     const colorMap = {
                         '01': 'Blue', '02': 'Black', '03': 'White', '04': 'Red',
                         '05': 'Pink', '06': 'Green', '07': 'Yellow', '08': 'Orange',
@@ -521,13 +568,11 @@
                         '16': 'Brown'
                     };
 
-                    // Garment Type mapping
                     const typeMap = {
                         '0003': 'Frock', '0004': 'Skirt', '0005': 'Dress',
                         '0006': 'Top', '0007': 'Bottom'
                     };
 
-                    // Gender mapping
                     const genderMap = {
                         '01': 'Girls', '02': 'Boys', '03': 'Unisex'
                     };
@@ -543,7 +588,6 @@
                         
                         totalRows++;
 
-                        // 🔑 READ INDIVIDUAL ITEM DATA
                         const tagId = row['TAG_ID'] ? String(row['TAG_ID']).trim() : '';
                         const locCode = row['LOC_CODE'] ? String(row['LOC_CODE']).trim() : '';
                         const srNo = row['SR_NO'] ? String(row['SR_NO']).trim() : '';
@@ -551,33 +595,27 @@
                         if (tagId) rowsWithBarcode++;
                         if (locCode) rowsWithLocation++;
 
-                        // Get product name
                         let productName = row['PRODUCT_NAME'] || `Design ${designNo}`;
                         if (productName.includes(' STYLE')) {
                             productName = productName.split(' STYLE')[0];
                         }
 
-                        // Get color
                         const colorCode = row['COLOR_CODE'] ? String(row['COLOR_CODE']).trim() : '01';
                         const color = colorMap[colorCode] || `Color${colorCode}`;
                         const colorName = row['COLOR_NAME'] || color;
 
-                        // Get gender
                         const genderCode = row['GENDER_CODE'] ? String(row['GENDER_CODE']).trim() : '01';
                         const gender = genderMap[genderCode] || 'Girls';
                         const genderName = row['GENDER_NAME'] || gender;
 
-                        // Get size
                         const sizeCode = row['SIZE_CODE'] ? String(row['SIZE_CODE']).trim() : '03';
                         const size = sizeMap[sizeCode] || sizeCode;
                         const sizeName = row['SIZE_NAME'] || size;
 
-                        // Get garment type
                         const itemGpCode = row['ITEM_GP_CODE'] ? String(row['ITEM_GP_CODE']).trim() : '0003';
                         const garmentType = typeMap[itemGpCode] || 'Frock';
                         const garmentName = row['ITEM_GP_NAME'] || garmentType;
 
-                        // Create or get design
                         if (!designsMap.has(designNo)) {
                             designsMap.set(designNo, {
                                 designNo: designNo,
@@ -596,11 +634,10 @@
 
                         const design = designsMap.get(designNo);
 
-                        // 🔑 ADD INDIVIDUAL ITEM WITH BARCODE AND LOCATION
                         design.items.push({
                             srNo: srNo,
-                            tagId: tagId,      // ← Garment Barcode
-                            locCode: locCode,  // ← Location Barcode
+                            tagId: tagId,
+                            locCode: locCode,
                             size: size,
                             sizeCode: sizeCode,
                             status: 'available'
@@ -609,7 +646,6 @@
                         if (tagId) design.hasBarcodes = true;
                         if (locCode) design.hasLocations = true;
 
-                        // Count sizes
                         if (!design.sizes[size]) design.sizes[size] = 0;
                         design.sizes[size]++;
                         design.totalPieces++;
@@ -618,7 +654,6 @@
                     currentInventory = Array.from(designsMap.values());
                     currentInventory.sort((a, b) => a.designNo.localeCompare(b.designNo));
 
-                    // Stats
                     document.getElementById('stats').style.display = 'grid';
                     document.getElementById('stats').innerHTML = `
                         <div class="stat-card"><div class="stat-number">${currentInventory.length}</div><div class="stat-label">Unique Designs</div></div>
@@ -629,7 +664,6 @@
                         <div class="stat-card" style="background:#fff3e0;"><div class="stat-number" style="color:#e65100;">${totalRows - rowsWithLocation}</div><div class="stat-label">⚠️ Missing Location</div></div>
                     `;
 
-                    // Preview
                     const previewDiv = document.getElementById('preview');
                     previewDiv.style.display = 'block';
                     previewDiv.innerHTML = `
@@ -672,7 +706,6 @@
                     statusDiv.innerHTML = `✅ Loaded ${currentInventory.length} unique designs with ${totalRows} individual garments! Click Save.`;
                     document.getElementById('saveBtn').style.display = 'inline-block';
                     
-                    // Show barcode summary
                     loadBarcodeSummary();
 
                 } catch (error) {
@@ -688,7 +721,6 @@
         function saveInventory() {
             if (!currentInventory) return;
             
-            // Send to server
             fetch('/api/inventory/import', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -789,7 +821,7 @@
             `;
         }
 
-        // ==================== FEATURED DESIGNS ====================
+        // ==================== DETECT IMAGES ====================
         function detectImages() {
             const savedInventory = localStorage.getItem('inventoryData');
             if (!savedInventory) {
@@ -802,23 +834,27 @@
             
             const progressDiv = document.getElementById('scanProgress');
             progressDiv.style.display = 'block';
-            document.getElementById('scanText').textContent = `🔍 Checking ${allDesignNos.length} designs for images...`;
+            document.getElementById('scanText').textContent = `🔍 Checking ${allDesignNos.length} designs on Supabase...`;
             document.getElementById('scanBar').style.width = '0%';
             
             let foundImages = [];
             let checked = 0;
             const total = allDesignNos.length;
             
+            // Check images on Supabase
+            const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
+            const BUCKET_NAME = 'costume-images';
+            
             allDesignNos.forEach((designNo) => {
                 const img = new Image();
-                const thumbPath = `images/thumbs/${designNo}.jpg`;
+                const imagePath = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${designNo}.jpg`;
                 
                 const timeoutId = setTimeout(() => {
                     if (!img.complete) {
                         checked++;
                         updateDetectProgress(checked, total, foundImages.length);
                     }
-                }, 500);
+                }, 2000);
                 
                 img.onload = function() {
                     clearTimeout(timeoutId);
@@ -831,7 +867,7 @@
                     checked++;
                     updateDetectProgress(checked, total, foundImages.length);
                 };
-                img.src = thumbPath;
+                img.src = imagePath;
             });
             
             function updateDetectProgress(checked, total, found) {
@@ -850,6 +886,10 @@
         }
         
         function displayFoundImages(foundImages, inventory) {
+            // ✅ Save image list to SUPABASE TABLE (so all schools can use it)
+            saveImageListToSupabase(foundImages);
+            
+            // Update admin display
             allDesigns = inventory
                 .filter(item => foundImages.includes(item.designNo))
                 .map(item => ({
@@ -868,6 +908,8 @@
             updateFeaturedList();
             updateSelectedInfo();
             document.getElementById('imageCount').textContent = allDesigns.length;
+            
+            alert(`✅ Found ${foundImages.length} images! Saved to Supabase for all schools.`);
         }
         
         function filterDesigns() {

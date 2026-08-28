@@ -353,14 +353,19 @@
         document.getElementById('schoolEmail').textContent = sessionStorage.getItem('schoolEmail') || 'No email';
 
         // ============================================================
-        // IMAGE PATH DETECTION - Supabase + Local
+        // SUPABASE CONFIG
+        // ============================================================
+        const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg
+'; // 🔴 REPLACE WITH YOUR ACTUAL KEY!
+
+        // ============================================================
+        // IMAGE PATH
         // ============================================================
         const isLive = window.location.hostname !== 'localhost' && 
                        window.location.hostname !== '127.0.0.1';
 
-        const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
         const BUCKET_NAME = 'costume-images';
-
         const IMAGE_BASE = isLive 
             ? `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/` 
             : '/images/thumbs/';
@@ -381,15 +386,12 @@
             try {
                 const response = await fetch('/api/locations');
                 const result = await response.json();
-                console.log('📍 Location API response:', result ? 'success' : 'failed');
-                
                 if (result.success) {
                     locationMaster = result.locations;
                     localStorage.setItem('locationMaster', JSON.stringify(locationMaster));
                     console.log('✅ Location master loaded:', Object.keys(locationMaster).length);
                 }
             } catch (err) {
-                console.error('❌ Error loading location master:', err);
                 const saved = localStorage.getItem('locationMaster');
                 if (saved) {
                     try {
@@ -403,21 +405,16 @@
         }
 
         // ============================================================
-        // GET LOCATION DISPLAY - From location master
+        // GET LOCATION DISPLAY
         // ============================================================
         function getLocationDisplay(locCode) {
-            // If no locCode or empty string
             if (!locCode || locCode === '' || locCode === 'N/A' || locCode === 'undefined') {
                 return '📍 No location assigned';
             }
             
-            // Convert to string for comparison
             const code = String(locCode).trim();
-            
-            // Try to find in locationMaster (memory)
             let loc = locationMaster[code];
             
-            // If not found, try localStorage
             if (!loc) {
                 try {
                     const saved = localStorage.getItem('locationMaster');
@@ -429,49 +426,44 @@
             }
             
             if (loc) {
-                if (loc.display) {
-                    return `📍 ${loc.display}`;
-                }
+                if (loc.display) return `📍 ${loc.display}`;
                 const parts = [];
                 if (loc.rack) parts.push(`Rack ${loc.rack}`);
                 if (loc.shelf) parts.push(`Shelf ${loc.shelf}`);
                 if (loc.position) parts.push(`Position ${loc.position}`);
-                if (parts.length > 0) {
-                    return `📍 ${parts.join(', ')}`;
-                }
+                if (parts.length > 0) return `📍 ${parts.join(', ')}`;
                 return `📍 ${code}`;
             }
             
-            // Location not found in master
             return `📍 ${code} (Location not mapped)`;
         }
 
         // ============================================================
-        // CHECK IF IMAGE EXISTS
+        // GET IMAGE LIST FROM SUPABASE TABLE (FAST!)
         // ============================================================
-        function checkImageExists(designNo) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                const imageUrl = `${IMAGE_BASE}${designNo}.jpg`;
-                
-                img.onload = function() {
-                    resolve(true);
-                };
-                img.onerror = function() {
-                    resolve(false);
-                };
-                img.src = imageUrl;
-                
-                setTimeout(() => {
-                    if (!img.complete) {
-                        resolve(false);
+        async function getImageListFromSupabase() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/image_list?select=design_no`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     }
-                }, 3000);
-            });
+                });
+                
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    return data.map(item => item.design_no);
+                }
+                return [];
+            } catch (err) {
+                console.error('Error loading image list from Supabase:', err);
+                return [];
+            }
         }
 
         // ============================================================
-        // LOAD INVENTORY - Image First Logic
+        // LOAD INVENTORY - READ IMAGE LIST FROM SUPABASE (FAST!)
         // ============================================================
         async function loadInventory() {
             const saved = localStorage.getItem('inventoryData');
@@ -488,45 +480,29 @@
 
             const allData = JSON.parse(saved);
             
-            document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Scanning for images...</div>`;
-
-            // Check each design for image
-            let designsWithImages = [];
-            let checked = 0;
-            const total = allData.length;
-
-            for (const design of allData) {
-                const hasImage = await checkImageExists(design.designNo);
-                checked++;
-                
-                if (hasImage) {
-                    designsWithImages.push(design);
-                }
-                
-                if (checked % 10 === 0 || checked === total) {
-                    document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Scanning images... (${checked}/${total}) Found: ${designsWithImages.length}</div>`;
-                }
-            }
-
-            // Only keep designs with images
-            inventoryData = designsWithImages;
-            inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
-
-            populateFilters();
-            displayCostumes();
-            updateStats();
-            updateCartDisplay();
+            // ✅ Read image list from Supabase TABLE (FAST!)
+            const designsWithImages = await getImageListFromSupabase();
             
-            console.log(`✅ Loaded ${inventoryData.length} designs with images`);
-
-            if (inventoryData.length === 0) {
-                document.getElementById('imageGrid').innerHTML = `
-                    <div class="no-results">
-                        ⚠️ No designs with images found.<br><br>
-                        Please upload images to Supabase or check your connection.
-                    </div>
-                `;
+            if (designsWithImages.length > 0) {
+                inventoryData = allData.filter(item => designsWithImages.includes(item.designNo));
+                inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
+                
+                populateFilters();
+                displayCostumes();
+                updateStats();
+                updateCartDisplay();
+                
+                console.log(`✅ Fast load: ${inventoryData.length} designs with images (from Supabase)`);
+                return;
             }
+            
+            // ❌ No image list - show message
+            document.getElementById('imageGrid').innerHTML = `
+                <div class="no-results">
+                    ⚠️ No image list found. Please contact admin.<br><br>
+                    <small>Admin needs to run "Detect Images" in the admin panel.</small>
+                </div>
+            `;
         }
 
         // ==================== DISPLAY FUNCTIONS ====================
@@ -660,7 +636,6 @@
             let itemsHtml = '';
             if (design.items && design.items.length > 0) {
                 itemsHtml = design.items.map((item, index) => {
-                    // ✅ Get location from location master
                     const locationDisplay = getLocationDisplay(item.locCode);
                     
                     return `
