@@ -524,68 +524,67 @@
         }
 
         function displayCostumes() {
-            const filtered = getFilteredData();
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-            const pageItems = filtered.slice(start, end);
-            
-            const grid = document.getElementById('imageGrid');
-            
-            if (pageItems.length === 0) {
-                grid.innerHTML = '<div class="no-results">No costumes found. Try adjusting your filters.</div>';
-                document.getElementById('pagination').innerHTML = '';
-                return;
-            }
-            
-            grid.innerHTML = pageItems.map(item => {
-                const sizeList = Object.entries(item.sizes);
-                const thumbPath = `${IMAGE_BASE}${item.designNo}.jpg`;
-                const placeholder = `https://via.placeholder.com/250x220?text=📸+${item.designNo}`;
-                
-                let stockClass = 'stock-available';
-                let stockText = 'In Stock';
-                if (item.totalPieces === 0) {
-                    stockClass = 'stock-none';
-                    stockText = 'Out of Stock';
-                } else if (item.totalPieces <= 2) {
-                    stockClass = 'stock-limited';
-                    stockText = 'Limited Stock';
-                }
-                
-                return `
-                    <div class="costume-card" onclick="showDetails('${item.designNo}')">
-                        <div class="image-container">
-                            <img class="costume-image" 
-                                 src="${thumbPath}" 
-                                 alt="${item.productName}"
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='${placeholder}'">
-                            <div class="stock-overlay ${stockClass}">${stockText}</div>
-                        </div>
-                        <div class="costume-info">
-                            <div class="costume-name">${item.productName.substring(0, 35)}</div>
-                            <div class="costume-design">🔖 Design #: ${item.designNo}</div>
-                            <div class="costume-design">🎨 ${item.color || 'Various'} | 👗 ${item.garmentType || 'Costume'}</div>
-                            <div class="size-buttons">
-                                ${sizeList.map(([size, qty]) => `
-                                    <button class="size-btn ${qty === 0 ? 'disabled' : ''}" 
-                                            onclick="event.stopPropagation(); addToCart('${item.designNo}', '${size}', ${qty})"
-                                            ${qty === 0 ? 'disabled' : ''}>
-                                        ${size} (${qty})
-                                    </button>
-                                `).join('')}
-                            </div>
-                            <div style="font-size: 11px; color: #888; margin-top: 5px;">
-                                📦 ${item.totalPieces} piece${item.totalPieces !== 1 ? 's' : ''} available
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            displayPagination(totalPages);
+    const filtered = getFilteredData();
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = filtered.slice(start, end);
+    
+    const grid = document.getElementById('imageGrid');
+    
+    if (pageItems.length === 0) {
+        grid.innerHTML = '<div class="no-results">No costumes found. Try adjusting your filters.</div>';
+        document.getElementById('pagination').innerHTML = '';
+        return;
+    }
+    
+    grid.innerHTML = pageItems.map(item => {
+        const sizeList = Object.entries(item.sizes);
+        // ✅ ONLY use Supabase URL - NO placeholder!
+        const thumbPath = `${IMAGE_BASE}${item.designNo}.jpg`;
+        
+        let stockClass = 'stock-available';
+        let stockText = 'In Stock';
+        if (item.totalPieces === 0) {
+            stockClass = 'stock-none';
+            stockText = 'Out of Stock';
+        } else if (item.totalPieces <= 2) {
+            stockClass = 'stock-limited';
+            stockText = 'Limited Stock';
         }
+        
+        return `
+            <div class="costume-card" onclick="showDetails('${item.designNo}')">
+                <div class="image-container">
+                    <img class="costume-image" 
+                         src="${thumbPath}" 
+                         alt="${item.productName}"
+                         loading="lazy">
+                    <div class="stock-overlay ${stockClass}">${stockText}</div>
+                </div>
+                <div class="costume-info">
+                    <div class="costume-name">${item.productName.substring(0, 35)}</div>
+                    <div class="costume-design">🔖 Design #: ${item.designNo}</div>
+                    <div class="costume-design">🎨 ${item.color || 'Various'} | 👗 ${item.garmentType || 'Costume'}</div>
+                    <div class="size-buttons">
+                        ${sizeList.map(([size, qty]) => `
+                            <button class="size-btn ${qty === 0 ? 'disabled' : ''}" 
+                                    onclick="event.stopPropagation(); addToCart('${item.designNo}', '${size}', ${qty})"
+                                    ${qty === 0 ? 'disabled' : ''}>
+                                ${size} (${qty})
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div style="font-size: 11px; color: #888; margin-top: 5px;">
+                        📦 ${item.totalPieces} piece${item.totalPieces !== 1 ? 's' : ''} available
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    displayPagination(totalPages);
+}
 
         function displayPagination(totalPages) {
             const paginationDiv = document.getElementById('pagination');
@@ -610,11 +609,14 @@
 
         // ==================== DETAILS MODAL ====================
         function showDetails(designNo) {
-            const design = inventoryData.find(d => d.designNo === designNo);
-            if (!design) return;
-            
-            const imagePath = `${IMAGE_BASE}${design.designNo}.jpg`;
-            const placeholder = `https://via.placeholder.com/400x300?text=📸+${design.designNo}`;
+    const design = inventoryData.find(d => d.designNo === designNo);
+    if (!design) return;
+    
+    // ✅ ONLY use Supabase URL - NO placeholder!
+    const imagePath = `${IMAGE_BASE}${design.designNo}.jpg`;
+    
+    // ... rest of the function
+}
             
             let itemsHtml = '';
             if (design.items && design.items.length > 0) {
