@@ -352,6 +352,22 @@
         document.getElementById('schoolName').textContent = sessionStorage.getItem('schoolName') || 'School';
         document.getElementById('schoolEmail').textContent = sessionStorage.getItem('schoolEmail') || 'No email';
 
+        // ============================================================
+        // IMAGE PATH DETECTION - Works locally AND on Render
+        // ============================================================
+        const isLive = window.location.hostname !== 'localhost' && 
+                       window.location.hostname !== '127.0.0.1';
+
+        // 🔴 CHANGE THIS TO YOUR SUPABASE URL:
+        const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
+        const BUCKET_NAME = 'costume-images';
+
+        const IMAGE_BASE = isLive 
+            ? `https://vpvewqyfbtqpckcjlxsg.supabase.co/storage/v1/object/public/costume-images/` 
+            : '/images/thumbs/';
+
+        console.log(`📸 Image source: ${isLive ? 'Supabase' : 'Local'}`);
+
         // ==================== DATA ====================
         let inventoryData = [];
         let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
@@ -393,7 +409,7 @@
             return `📍 ${locCode} (Location not mapped)`;
         }
 
-        // ==================== LOAD INVENTORY (WITH IMAGE FILTERING) ====================
+        // ==================== LOAD INVENTORY ====================
         function loadInventory() {
             const saved = localStorage.getItem('inventoryData');
             const lastUpdate = localStorage.getItem('lastInventoryUpdate');
@@ -403,77 +419,14 @@
             }
             
             if (saved) {
-                const allData = JSON.parse(saved);
+                inventoryData = JSON.parse(saved);
+                inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
                 
-                // ============================================================
-                // FILTER: Only keep designs that have images
-                // ============================================================
-                let designsWithImages = [];
-                let checked = 0;
-                const total = allData.length;
-                
-                if (total === 0) {
-                    document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded. Please contact administrator.</div>';
-                    return;
-                }
-                
-                document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Checking for images... (0/${total})</div>`;
-                
-                allData.forEach(design => {
-                    const img = new Image();
-                    const thumbPath = `/images/thumbs/${design.designNo}.jpg`;
-                    
-                    const timeoutId = setTimeout(() => {
-                        // Image doesn't exist or timed out - skip
-                        checked++;
-                        updateLoadingProgress(checked, total, designsWithImages.length);
-                    }, 300);
-                    
-                    img.onload = function() {
-                        clearTimeout(timeoutId);
-                        // Image exists - keep this design
-                        designsWithImages.push(design);
-                        checked++;
-                        updateLoadingProgress(checked, total, designsWithImages.length);
-                    };
-                    img.onerror = function() {
-                        clearTimeout(timeoutId);
-                        // Image doesn't exist - skip
-                        checked++;
-                        updateLoadingProgress(checked, total, designsWithImages.length);
-                    };
-                    img.src = thumbPath;
-                });
-                
-                // ⏱️ Safety timeout: If checking takes too long, show what we have
-                setTimeout(() => {
-                    if (checked < total) {
-                        // Force finish with whatever we have
-                        inventoryData = designsWithImages;
-                        inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
-                        populateFilters();
-                        displayCostumes();
-                        updateStats();
-                        updateCartDisplay();
-                        console.log(`⚠️ Timeout: Loaded ${inventoryData.length} designs with images`);
-                    }
-                }, 10000);
-                
-                function updateLoadingProgress(checked, total, found) {
-                    document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Checking for images... (${checked}/${total}) Found: ${found}</div>`;
-                    
-                    if (checked >= total) {
-                        // All checked - done!
-                        inventoryData = designsWithImages;
-                        inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
-                        populateFilters();
-                        displayCostumes();
-                        updateStats();
-                        updateCartDisplay();
-                        console.log(`✅ Loaded ${inventoryData.length} designs with images (out of ${total} total)`);
-                    }
-                }
-                
+                populateFilters();
+                displayCostumes();
+                updateStats();
+                updateCartDisplay();
+                console.log(`✅ Loaded ${inventoryData.length} designs`);
             } else {
                 document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded. Please contact administrator.</div>';
             }
@@ -531,8 +484,10 @@
             
             grid.innerHTML = pageItems.map(item => {
                 const sizeList = Object.entries(item.sizes);
-                const thumbPath = `images/thumbs/${item.designNo}.jpg`;
-                const fullPath = `images/${item.designNo}.jpg`;
+                // ✅ Use IMAGE_BASE for thumbnails
+                const thumbPath = `${IMAGE_BASE}${item.designNo}.jpg`;
+                const fullPath = `${IMAGE_BASE}${item.designNo}.jpg`;
+                const placeholder = `https://via.placeholder.com/250x220?text=📸+${item.designNo}`;
                 
                 let stockClass = 'stock-available';
                 let stockText = 'In Stock';
@@ -550,7 +505,8 @@
                             <img class="costume-image" 
                                  src="${thumbPath}" 
                                  alt="${item.productName}"
-                                 onerror="this.onerror=null; this.src='${fullPath}'; this.onerror=function(){this.src='https://via.placeholder.com/250x220?text=📸+${item.designNo}'}">
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${placeholder}'">
                             <div class="stock-overlay ${stockClass}">${stockText}</div>
                         </div>
                         <div class="costume-info">
@@ -603,8 +559,9 @@
             const design = inventoryData.find(d => d.designNo === designNo);
             if (!design) return;
             
-            const thumbPath = `images/thumbs/${design.designNo}.jpg`;
-            const fullPath = `images/${design.designNo}.jpg`;
+            // ✅ Use IMAGE_BASE for full image
+            const imagePath = `${IMAGE_BASE}${design.designNo}.jpg`;
+            const placeholder = `https://via.placeholder.com/400x300?text=📸+${design.designNo}`;
             
             let itemsHtml = '';
             if (design.items && design.items.length > 0) {
@@ -636,8 +593,8 @@
             
             document.getElementById('modalTitle').textContent = design.productName;
             document.getElementById('modalBody').innerHTML = `
-                <img class="modal-image" src="${fullPath}" 
-                     onerror="this.src='${thumbPath}'; this.onerror=function(){this.src='https://via.placeholder.com/400x300?text=📸+${design.designNo}'}">
+                <img class="modal-image" src="${imagePath}" 
+                     onerror="this.onerror=null; this.src='${placeholder}'">
                 
                 <div class="item-detail-row">
                     <span class="label">Design #</span>
