@@ -366,13 +366,6 @@
             : '/images/thumbs/';
 
         // ============================================================
-        // STEP 1: SCAN IMAGES - Get all design numbers from Supabase
-        // ============================================================
-        // We need to know which images exist. Since we can't list files from Supabase,
-        // we'll use a list of design numbers from inventory and check each one.
-        // OR we can use the list you already have.
-
-        // ============================================================
         // DATA
         // ============================================================
         let inventoryData = [];
@@ -388,12 +381,15 @@
             try {
                 const response = await fetch('/api/locations');
                 const result = await response.json();
+                console.log('📍 Location API response:', result ? 'success' : 'failed');
+                
                 if (result.success) {
                     locationMaster = result.locations;
                     localStorage.setItem('locationMaster', JSON.stringify(locationMaster));
                     console.log('✅ Location master loaded:', Object.keys(locationMaster).length);
                 }
             } catch (err) {
+                console.error('❌ Error loading location master:', err);
                 const saved = localStorage.getItem('locationMaster');
                 if (saved) {
                     try {
@@ -410,17 +406,48 @@
         // GET LOCATION DISPLAY - From location master
         // ============================================================
         function getLocationDisplay(locCode) {
-            if (!locCode) return '📍 No location assigned';
-            
-            const loc = locationMaster[locCode];
-            if (loc) {
-                return `📍 ${loc.display || `Rack ${loc.rack}, Shelf ${loc.shelf}, Position ${loc.position}`}`;
+            // If no locCode or empty string
+            if (!locCode || locCode === '' || locCode === 'N/A' || locCode === 'undefined') {
+                return '📍 No location assigned';
             }
-            return `📍 ${locCode} (Location not mapped)`;
+            
+            // Convert to string for comparison
+            const code = String(locCode).trim();
+            
+            // Try to find in locationMaster (memory)
+            let loc = locationMaster[code];
+            
+            // If not found, try localStorage
+            if (!loc) {
+                try {
+                    const saved = localStorage.getItem('locationMaster');
+                    if (saved) {
+                        const allLocs = JSON.parse(saved);
+                        loc = allLocs[code];
+                    }
+                } catch(e) {}
+            }
+            
+            if (loc) {
+                if (loc.display) {
+                    return `📍 ${loc.display}`;
+                }
+                const parts = [];
+                if (loc.rack) parts.push(`Rack ${loc.rack}`);
+                if (loc.shelf) parts.push(`Shelf ${loc.shelf}`);
+                if (loc.position) parts.push(`Position ${loc.position}`);
+                if (parts.length > 0) {
+                    return `📍 ${parts.join(', ')}`;
+                }
+                return `📍 ${code}`;
+            }
+            
+            // Location not found in master
+            return `📍 ${code} (Location not mapped)`;
         }
 
         // ============================================================
-        // STEP 1: SCAN IMAGES - Check if image exists on Supabase
+        // CHECK IF IMAGE EXISTS
         // ============================================================
         function checkImageExists(designNo) {
             return new Promise((resolve) => {
@@ -435,7 +462,6 @@
                 };
                 img.src = imageUrl;
                 
-                // Timeout after 3 seconds
                 setTimeout(() => {
                     if (!img.complete) {
                         resolve(false);
@@ -445,7 +471,7 @@
         }
 
         // ============================================================
-        // STEP 2: LOAD INVENTORY - IMAGE FIRST LOGIC
+        // LOAD INVENTORY - Image First Logic
         // ============================================================
         async function loadInventory() {
             const saved = localStorage.getItem('inventoryData');
@@ -462,13 +488,9 @@
 
             const allData = JSON.parse(saved);
             
-            // Show loading
             document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Scanning for images...</div>`;
 
-            // ============================================================
-            // STEP 1: SCAN IMAGES - Check each design for image
-            // ============================================================
-            console.log('📸 Scanning images...');
+            // Check each design for image
             let designsWithImages = [];
             let checked = 0;
             const total = allData.length;
@@ -481,25 +503,14 @@
                     designsWithImages.push(design);
                 }
                 
-                // Update progress every 10 items
                 if (checked % 10 === 0 || checked === total) {
                     document.getElementById('imageGrid').innerHTML = `<div class="loading">🔍 Scanning images... (${checked}/${total}) Found: ${designsWithImages.length}</div>`;
                 }
             }
 
-            console.log(`📸 Found ${designsWithImages.length} designs with images out of ${total}`);
-
-            // ============================================================
-            // STEP 3: INVENTORY DATA - Only keep designs with images
-            // ============================================================
+            // Only keep designs with images
             inventoryData = designsWithImages;
             inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
-
-            // ============================================================
-            // STEP 4: ADD LOCATION DATA - From location master
-            // ============================================================
-            // Location data is added dynamically when showing details
-            // via the getLocationDisplay() function
 
             populateFilters();
             displayCostumes();
