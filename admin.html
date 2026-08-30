@@ -121,7 +121,7 @@
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background: #667eea; color: white; position: sticky; top: 0; }
 
-        /* Featured Designs */
+        /* Featured Designs - WITH IMAGES */
         .designs-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -146,6 +146,15 @@
 
         .design-item:hover { background: #e3f2fd; }
         .design-item.featured { background: #fff3e0; border-color: #ff9800; }
+
+        .design-thumb {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #e0e0e0;
+        }
 
         .design-number { font-weight: bold; font-size: 13px; }
         .design-name { font-size: 10px; color: #666; margin-top: 3px; }
@@ -269,7 +278,7 @@
                         <strong>✅ Images Found:</strong> <span id="imageCount">0</span>
                     </div>
                     <div>
-                        <button class="btn btn-success" onclick="detectImages()">🔄 Detect Images from Supabase</button>
+                        <button class="btn btn-success" onclick="detectImages()">🔄 Detect Images</button>
                     </div>
                 </div>
 
@@ -369,6 +378,11 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg';
         const BUCKET_NAME = 'costume-images';
 
+        // ✅ Get Supabase image URL
+        function getImageUrl(designNo) {
+            return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${designNo}.jpg`;
+        }
+
         let allDesigns = [];
         let featuredDesigns = [];
         let currentInventory = null;
@@ -389,15 +403,15 @@
             if (tab === 'orders') loadOrders();
         }
 
-        // ==================== IMAGE DETECTION (USING image_list TABLE) ====================
+        // ==================== IMAGE DETECTION (WITH ACTUAL IMAGES) ====================
         async function detectImages() {
             const progressDiv = document.getElementById('scanProgress');
             progressDiv.style.display = 'block';
-            document.getElementById('scanText').textContent = '🔍 Reading image list from Supabase...';
+            document.getElementById('scanText').textContent = '🔍 Reading images from Supabase...';
             document.getElementById('scanBar').style.width = '0%';
 
             try {
-                // ✅ Use the image_list table (confirmed working)
+                // Get image list from image_list table
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/image_list?select=design_no`, {
                     method: 'GET',
                     headers: {
@@ -407,16 +421,15 @@
                 });
 
                 const data = await response.json();
-                console.log('✅ image_list data:', data);
-
-                // Extract design numbers
                 const imageNames = data.map(item => item.design_no);
+
+                console.log('✅ Images found:', imageNames.length);
 
                 document.getElementById('scanBar').style.width = '100%';
                 document.getElementById('scanText').textContent = `✅ Found ${imageNames.length} images!`;
 
                 if (imageNames.length === 0) {
-                    document.getElementById('scanText').textContent = '⚠️ No images found in image_list table. Please add images to Supabase.';
+                    document.getElementById('scanText').textContent = '⚠️ No images found.';
                     setTimeout(() => { progressDiv.style.display = 'none'; }, 3000);
                     return;
                 }
@@ -429,7 +442,7 @@
                     inventory = JSON.parse(savedInventory);
                 }
 
-                // Display all designs with images
+                // Build design list with actual images
                 if (inventory.length > 0) {
                     allDesigns = inventory
                         .filter(item => imageNames.includes(item.designNo))
@@ -464,12 +477,12 @@
 
             } catch (err) {
                 console.error('Error scanning:', err);
-                document.getElementById('scanText').textContent = '❌ Error scanning: ' + err.message;
+                document.getElementById('scanText').textContent = '❌ Error: ' + err.message;
                 document.getElementById('scanBar').style.width = '100%';
             }
         }
 
-        // ==================== FEATURED DESIGNS ====================
+        // ==================== FEATURED DESIGNS (WITH IMAGES) ====================
         function filterDesigns() {
             const searchTerm = document.getElementById('searchDesign').value.toLowerCase();
             const filtered = allDesigns.filter(d => d.designNo.toLowerCase().includes(searchTerm));
@@ -487,10 +500,16 @@
 
             container.innerHTML = designs.map(design => {
                 const isFeatured = featuredDesigns.includes(design.designNo);
-                const thumbPath = `https://via.placeholder.com/180x120?text=${design.designNo}`;
+                // ✅ Use actual Supabase image URL
+                const imageUrl = getImageUrl(design.designNo);
+                const placeholder = `https://via.placeholder.com/180x120?text=${design.designNo}`;
 
                 return `
                     <div class="design-item ${isFeatured ? 'featured' : ''}" onclick="toggleFeatured('${design.designNo}')">
+                        <img class="design-thumb" 
+                             src="${imageUrl}" 
+                             alt="${design.designNo}"
+                             onerror="this.onerror=null; this.src='${placeholder}'">
                         <div class="design-number">🔖 ${design.designNo}</div>
                         <div class="design-name">${design.productName.substring(0, 20)}</div>
                         <div>${isFeatured ? '⭐' : '☆'}</div>
@@ -930,15 +949,12 @@
         window.deleteSchool = deleteSchool;
 
         // ==================== INIT ====================
-        // Load initial data
         const savedFeatured = localStorage.getItem('featuredDesigns');
         if (savedFeatured) {
             featuredDesigns = JSON.parse(savedFeatured);
         }
         loadSchools();
         loadOrders();
-        
-        // Auto-detect images
         setTimeout(detectImages, 500);
     </script>
 </body>
