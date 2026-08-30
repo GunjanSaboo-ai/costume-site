@@ -27,7 +27,7 @@
         .logout-btn { background: rgba(255,255,255,0.2); color: white; padding: 5px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; }
         .cart-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
 
-        /* ===== FILTERS (Simple) ===== */
+        /* ===== FILTERS ===== */
         .filters {
             background: white;
             padding: 10px 15px;
@@ -49,7 +49,7 @@
         .filter-input:focus { outline: none; border-color: #667eea; }
         .stats { font-size: 13px; color: #666; }
 
-        /* ===== IMAGE GRID - FILLS SCREEN ===== */
+        /* ===== IMAGE GRID - AUTO FILL ===== */
         .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -90,28 +90,6 @@
             transform: scale(1.04);
         }
 
-        /* ===== PAGINATION ===== */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-top: 12px;
-        }
-
-        .page-btn {
-            padding: 6px 14px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .page-btn.active { background: #667eea; color: white; border-color: #667eea; }
-        .page-btn:hover:not(.active) { background: #f0f0f0; }
-
         .loading {
             text-align: center;
             padding: 40px;
@@ -120,7 +98,7 @@
         }
         .no-results { text-align: center; padding: 40px; color: #999; }
 
-        /* ===== MODAL (Image Preview) ===== */
+        /* ===== MODAL ===== */
         .modal {
             display: none;
             position: fixed;
@@ -237,7 +215,7 @@
             margin-top: 4px;
         }
 
-        /* ===== CART (Sliding Panel) ===== */
+        /* ===== CART ===== */
         .cart-panel {
             position: fixed;
             right: 0;
@@ -352,16 +330,13 @@
         <!-- Filters -->
         <div class="filters">
             <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search design number...">
-            <span class="stats" id="imageCount">0 images</span>
+            <span class="stats" id="imageCount">Loading...</span>
         </div>
 
-        <!-- Image Grid -->
+        <!-- Image Grid - ALL IMAGES -->
         <div class="image-grid" id="imageGrid">
             <div class="loading">Loading images...</div>
         </div>
-
-        <!-- Pagination -->
-        <div class="pagination" id="pagination"></div>
     </div>
 
     <!-- Modal -->
@@ -399,8 +374,6 @@
         const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
         const BUCKET_NAME = 'costume-images';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg';
-        const itemsPerPage = 40;
-        let currentPage = 1;
         let imageList = [];
         let inventoryData = {};
         let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
@@ -437,7 +410,7 @@
             return null;
         }
 
-        // ==================== LOAD IMAGES ====================
+        // ==================== LOAD ALL IMAGES (NO PAGINATION) ====================
         async function loadImages() {
             try {
                 const grid = document.getElementById('imageGrid');
@@ -460,15 +433,9 @@
 
                 document.getElementById('imageCount').textContent = imageList.length + ' images';
 
-                // Paginate
-                const totalPages = Math.ceil(imageList.length / itemsPerPage);
-                const start = (currentPage - 1) * itemsPerPage;
-                const end = start + itemsPerPage;
-                const pageItems = imageList.slice(start, end);
-
-                // Display images only (no data processing)
-                grid.innerHTML = pageItems.map(designNo => `
-                    <div class="costume-card" onclick="showDetails('${designNo}')">
+                // ✅ DISPLAY ALL IMAGES - NO PAGINATION
+                grid.innerHTML = imageList.map(designNo => `
+                    <div class="costume-card" data-design="${designNo}" onclick="showDetails('${designNo}')">
                         <div class="image-container">
                             <img class="costume-image" 
                                  src="${getImageUrl(designNo)}" 
@@ -479,19 +446,7 @@
                     </div>
                 `).join('');
 
-                // Pagination
-                const paginationDiv = document.getElementById('pagination');
-                if (totalPages <= 1) {
-                    paginationDiv.innerHTML = '';
-                } else {
-                    let html = '';
-                    if (currentPage > 1) html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})">←</button>`;
-                    for (let i = 1; i <= totalPages; i++) {
-                        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-                    }
-                    if (currentPage < totalPages) html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">→</button>`;
-                    paginationDiv.innerHTML = html;
-                }
+                console.log('✅ Loaded', imageList.length, 'images');
 
             } catch (err) {
                 console.error('Error:', err);
@@ -499,13 +454,7 @@
             }
         }
 
-        function goToPage(page) {
-            currentPage = page;
-            loadImages();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // ==================== SHOW DETAILS (Image + Data) ====================
+        // ==================== SHOW DETAILS ====================
         function showDetails(designNo) {
             const data = inventoryData[designNo];
             const imageUrl = getImageUrl(designNo);
@@ -519,14 +468,12 @@
                 const sizes = data.sizes || {};
                 const totalPieces = data.totalPieces || Object.values(sizes).reduce((a, b) => a + b, 0);
 
-                // Location
                 let locationText = '';
                 if (data.items && data.items.length > 0) {
                     const locs = data.items.map(item => getLocationDisplay(item.locCode)).filter(l => l);
                     if (locs.length > 0) locationText = `<div class="modal-location">📍 ${locs[0]}</div>`;
                 }
 
-                // Sizes
                 let sizeHtml = '';
                 for (const [size, qty] of Object.entries(sizes)) {
                     sizeHtml += `<button class="modal-size-btn" onclick="addToCart('${designNo}', '${size}', ${qty})">${size} (${qty})</button>`;
@@ -561,6 +508,23 @@
             document.getElementById('detailModal').classList.remove('active');
         }
 
+        // ==================== SEARCH ====================
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const term = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.costume-card');
+            let visible = 0;
+            cards.forEach(card => {
+                const design = card.getAttribute('data-design') || '';
+                if (design.includes(term)) {
+                    card.style.display = '';
+                    visible++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            document.getElementById('imageCount').textContent = visible + ' images (of ' + imageList.length + ')';
+        });
+
         // ==================== CART ====================
         function toggleCart() {
             document.getElementById('cartPanel').classList.toggle('open');
@@ -571,7 +535,6 @@
             const data = inventoryData[designNo];
             if (!data) { alert('No data available for this design'); return; }
 
-            // If size is empty (from "Add to Order" button), ask for size
             if (!size) {
                 const sizeOptions = Object.keys(data.sizes || {});
                 if (sizeOptions.length === 0) { alert('No sizes available'); return; }
@@ -600,6 +563,7 @@
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
             updateCartDisplay();
             alert(`✓ Added ${qty}x ${data.productName} (Size ${size})`);
+            closeDetailModal();
         }
 
         function updateCartDisplay() {
@@ -657,23 +621,11 @@
         }
 
         // ==================== EVENTS ====================
-        document.getElementById('searchInput').addEventListener('input', () => {
-            // Simple search filter
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const grid = document.getElementById('imageGrid');
-            const cards = grid.querySelectorAll('.costume-card');
-            cards.forEach(card => {
-                const designNo = card.getAttribute('data-design') || '';
-                card.style.display = designNo.includes(term) ? '' : 'none';
-            });
-        });
-
         document.getElementById('detailModal').addEventListener('click', function(e) {
             if (e.target === this) closeDetailModal();
         });
 
         // ==================== GLOBALS ====================
-        window.goToPage = goToPage;
         window.showDetails = showDetails;
         window.closeDetailModal = closeDetailModal;
         window.addToCart = addToCart;
