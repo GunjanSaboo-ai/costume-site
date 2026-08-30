@@ -398,7 +398,7 @@
             if (tab === 'orders') loadOrders();
         }
 
-        // ==================== IMAGE DETECTION (Supabase) ====================
+        // ==================== IMAGE DETECTION (FIXED) ====================
         async function detectImages() {
             const progressDiv = document.getElementById('scanProgress');
             progressDiv.style.display = 'block';
@@ -406,6 +406,7 @@
             document.getElementById('scanBar').style.width = '0%';
 
             try {
+                // ✅ FIXED: Correct Supabase Storage API call
                 const response = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET_NAME}`, {
                     method: 'POST',
                     headers: {
@@ -413,13 +414,50 @@
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ limit: 10000, offset: 0, sortBy: { column: 'name', order: 'asc' } })
+                    body: JSON.stringify({ 
+                        limit: 10000, 
+                        offset: 0,
+                        sortBy: { column: 'name', order: 'asc' }
+                    })
                 });
 
-                const data = await response.json();
-                const imageNames = data
-                    .filter(file => file.name.endsWith('.jpg'))
-                    .map(file => file.name.replace('.jpg', ''));
+                // ✅ FIXED: Properly parse the response
+                const result = await response.json();
+                
+                // ✅ FIXED: Handle different response formats
+                let imageNames = [];
+                
+                if (Array.isArray(result)) {
+                    imageNames = result
+                        .filter(file => file && typeof file === 'object' && file.name)
+                        .filter(file => file.name.endsWith('.jpg'))
+                        .map(file => file.name.replace('.jpg', ''));
+                } else if (result && result.data && Array.isArray(result.data)) {
+                    imageNames = result.data
+                        .filter(file => file.name && file.name.endsWith('.jpg'))
+                        .map(file => file.name.replace('.jpg', ''));
+                } else if (result && typeof result === 'object') {
+                    // If it's an object with keys, try to find the array
+                    for (const key of Object.keys(result)) {
+                        if (Array.isArray(result[key])) {
+                            imageNames = result[key]
+                                .filter(file => file && file.name && file.name.endsWith('.jpg'))
+                                .map(file => file.name.replace('.jpg', ''));
+                            break;
+                        }
+                    }
+                }
+
+                // ✅ FIXED: Log for debugging
+                console.log('Supabase response:', result);
+                console.log('Image names extracted:', imageNames);
+
+                if (imageNames.length === 0) {
+                    document.getElementById('scanText').textContent = '⚠️ No images found in Supabase. Make sure images are uploaded.';
+                    document.getElementById('scanBar').style.width = '100%';
+                    setTimeout(() => { progressDiv.style.display = 'none'; }, 2000);
+                    return;
+                }
 
                 document.getElementById('scanBar').style.width = '100%';
                 document.getElementById('scanText').textContent = `✅ Found ${imageNames.length} images!`;
@@ -466,8 +504,9 @@
                 }, 1500);
 
             } catch (err) {
+                console.error('Error scanning:', err);
                 document.getElementById('scanText').textContent = '❌ Error scanning: ' + err.message;
-                console.error(err);
+                document.getElementById('scanBar').style.width = '100%';
             }
         }
 
@@ -932,9 +971,16 @@
         window.deleteSchool = deleteSchool;
 
         // ==================== INIT ====================
-        detectImages();
+        // Load initial data
+        const savedFeatured = localStorage.getItem('featuredDesigns');
+        if (savedFeatured) {
+            featuredDesigns = JSON.parse(savedFeatured);
+        }
         loadSchools();
         loadOrders();
+        
+        // Auto-detect images
+        setTimeout(detectImages, 500);
     </script>
 </body>
 </html>
