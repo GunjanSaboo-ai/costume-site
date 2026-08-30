@@ -3,239 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Dashboard - Costume Store</title>
+    <title>School Dashboard</title>
     <style>
-        /* ... your existing CSS ... */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .costume-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        
+        .costume-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+        
+        .costume-info {
+            padding: 12px;
+        }
+        
+        .costume-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .page-btn {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .logout-btn {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
-    <!-- ... your existing HTML ... -->
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Costume Store</h1>
+            <div>
+                <span id="schoolNameDisplay"></span>
+                <a href="logout.html" class="logout-btn">🚪 Logout</a>
+            </div>
+        </div>
+
+        <div class="image-grid" id="imageGrid">
+            <div class="loading">Loading costumes...</div>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
 
     <script>
         // ==================== CHECK LOGIN ====================
         if (!sessionStorage.getItem('loggedIn')) {
             window.location.href = 'login.html';
         }
-        
-        document.getElementById('schoolName').textContent = sessionStorage.getItem('schoolName') || 'School';
-        document.getElementById('schoolEmail').textContent = sessionStorage.getItem('schoolEmail') || 'No email';
 
-        // ============================================================
-        // SUPABASE CONFIG
-        // ============================================================
+        // ==================== CONFIG ====================
         const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg';
         const BUCKET_NAME = 'costume-images';
+        const itemsPerPage = 20;
+        let currentPage = 1;
+        let inventoryData = [];
 
+        // ==================== SET SCHOOL NAME ====================
+        const schoolNameDisplay = document.getElementById('schoolNameDisplay');
+        if (schoolNameDisplay) {
+            schoolNameDisplay.textContent = '🏫 ' + (sessionStorage.getItem('schoolName') || 'School');
+        }
+
+        // ==================== GET IMAGE URL ====================
         function getImageUrl(designNo) {
             return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${designNo}.jpg`;
         }
 
-        // ============================================================
-        // GET IMAGE LIST FROM SUPABASE
-        // ============================================================
-        async function getImageList() {
-            try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/image_list?select=design_no`, {
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    }
-                });
-                const data = await response.json();
-                return data.map(item => item.design_no);
-            } catch (err) {
-                console.error('Error fetching image list:', err);
-                return [];
-            }
-        }
-
-        // ============================================================
-        // DATA
-        // ============================================================
-        let inventoryData = [];
-        let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
-        let currentPage = 1;
-        const itemsPerPage = 20;
-        let locationMaster = {};
-
-        // ============================================================
-        // LOAD LOCATION MASTER
-        // ============================================================
-        async function loadLocationMaster() {
-            try {
-                const response = await fetch('/api/locations');
-                const result = await response.json();
-                if (result.success) {
-                    locationMaster = result.locations;
-                    console.log('✅ Location master loaded:', Object.keys(locationMaster).length);
-                }
-            } catch (err) {
-                console.log('Could not load location master');
-            }
-        }
-
-        // ============================================================
-        // GET LOCATION DISPLAY
-        // ============================================================
-        function getLocationDisplay(locCode) {
-            if (!locCode || locCode === '' || locCode === 'N/A') {
-                return '📍 No location assigned';
-            }
-            
-            const code = String(locCode).trim();
-            let loc = locationMaster[code];
-            
-            if (loc) {
-                if (loc.display) return `📍 ${loc.display}`;
-                const parts = [];
-                if (loc.rack) parts.push(`Rack ${loc.rack}`);
-                if (loc.shelf) parts.push(`Shelf ${loc.shelf}`);
-                if (loc.position) parts.push(`Position ${loc.position}`);
-                if (parts.length > 0) return `📍 ${parts.join(', ')}`;
-                return `📍 ${code}`;
-            }
-            
-            return `📍 ${code} (Location not mapped)`;
-        }
-
-        // ============================================================
-        // LOAD INVENTORY - FILTER BY IMAGES
-        // ============================================================
-        async function loadInventory() {
+        // ==================== LOAD INVENTORY ====================
+        function loadInventory() {
             const saved = localStorage.getItem('inventoryData');
+            
             if (!saved) {
-                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded.</div>';
+                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded. Please contact admin.</div>';
                 return;
             }
 
-            const allData = JSON.parse(saved);
-            const imageNames = await getImageList();
-            
-            console.log('📸 Images from Supabase:', imageNames.length);
-            console.log('📦 Inventory designs:', allData.length);
-            
-            // ✅ ONLY keep designs that have images AND inventory data
-            inventoryData = allData.filter(item => imageNames.includes(item.designNo));
-            inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
-            
-            console.log(`✅ Showing ${inventoryData.length} designs with images`);
-            
-            populateFilters();
-            displayCostumes();
-            updateStats();
-            updateCartDisplay();
+            try {
+                const allData = JSON.parse(saved);
+                inventoryData = allData;
+                inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
+                
+                console.log('✅ Loaded', inventoryData.length, 'designs');
+                displayCostumes();
+            } catch (err) {
+                console.error('Error:', err);
+                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ Error loading inventory.</div>';
+            }
         }
 
-        // ==================== DISPLAY FUNCTIONS ====================
-        function populateFilters() {
-            const types = new Set();
-            inventoryData.forEach(item => {
-                if (item.garmentType) types.add(item.garmentType);
-            });
-            
-            const typeFilter = document.getElementById('typeFilter');
-            typeFilter.innerHTML = '<option value="all">All Types</option>';
-            Array.from(types).sort().forEach(type => {
-                typeFilter.innerHTML += `<option value="${type}">${type}</option>`;
-            });
-        }
-
-        function updateStats() {
-            const totalDesigns = inventoryData.length;
-            const totalAvailable = inventoryData.reduce((sum, d) => sum + d.totalPieces, 0);
-            document.getElementById('totalDesigns').textContent = totalDesigns;
-            document.getElementById('totalAvailable').textContent = totalAvailable;
-        }
-
-        function getFilteredData() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const typeFilter = document.getElementById('typeFilter').value;
-            const availabilityFilter = document.getElementById('availabilityFilter').value;
-            
-            return inventoryData.filter(item => {
-                const matchesSearch = item.designNo.toLowerCase().includes(searchTerm) || 
-                                     item.productName.toLowerCase().includes(searchTerm);
-                const matchesType = typeFilter === 'all' || item.garmentType === typeFilter;
-                const matchesAvailability = availabilityFilter === 'all' || item.totalPieces > 0;
-                return matchesSearch && matchesType && matchesAvailability;
-            });
-        }
-
+        // ==================== DISPLAY COSTUMES ====================
         function displayCostumes() {
-            const filtered = getFilteredData();
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
             const start = (currentPage - 1) * itemsPerPage;
             const end = start + itemsPerPage;
-            const pageItems = filtered.slice(start, end);
+            const pageItems = inventoryData.slice(start, end);
             
             const grid = document.getElementById('imageGrid');
             
             if (pageItems.length === 0) {
-                grid.innerHTML = '<div class="no-results">No costumes found. Try adjusting your filters.</div>';
+                grid.innerHTML = '<div class="no-results">No costumes found.</div>';
                 document.getElementById('pagination').innerHTML = '';
                 return;
             }
             
             grid.innerHTML = pageItems.map(item => {
-                const sizeList = Object.entries(item.sizes);
                 const imageUrl = getImageUrl(item.designNo);
-                
-                let stockClass = 'stock-available';
-                let stockText = 'In Stock';
-                if (item.totalPieces === 0) {
-                    stockClass = 'stock-none';
-                    stockText = 'Out of Stock';
-                } else if (item.totalPieces <= 2) {
-                    stockClass = 'stock-limited';
-                    stockText = 'Limited Stock';
-                }
+                const sizeList = Object.entries(item.sizes || {});
                 
                 return `
                     <div class="costume-card" onclick="showDetails('${item.designNo}')">
-                        <div class="image-container">
-                            <img class="costume-image" 
-                                 src="${imageUrl}" 
-                                 alt="${item.productName}"
-                                 loading="lazy">
-                            <div class="stock-overlay ${stockClass}">${stockText}</div>
-                        </div>
+                        <img src="${imageUrl}" alt="${item.productName}" loading="lazy">
                         <div class="costume-info">
-                            <div class="costume-name">${item.productName.substring(0, 35)}</div>
-                            <div class="costume-design">🔖 Design #: ${item.designNo}</div>
-                            <div class="costume-design">🎨 ${item.color || 'Various'} | 👗 ${item.garmentType || 'Costume'}</div>
-                            <div class="size-buttons">
-                                ${sizeList.map(([size, qty]) => `
-                                    <button class="size-btn ${qty === 0 ? 'disabled' : ''}" 
-                                            onclick="event.stopPropagation(); addToCart('${item.designNo}', '${size}', ${qty})"
-                                            ${qty === 0 ? 'disabled' : ''}>
-                                        ${size} (${qty})
-                                    </button>
-                                `).join('')}
-                            </div>
-                            <div style="font-size: 11px; color: #888; margin-top: 5px;">
-                                📦 ${item.totalPieces} piece${item.totalPieces !== 1 ? 's' : ''} available
+                            <div class="costume-name">${item.productName || 'Design ' + item.designNo}</div>
+                            <div style="font-size:12px; color:#888;">🔖 ${item.designNo}</div>
+                            <div style="font-size:12px; color:#888;">📦 ${item.totalPieces} pieces</div>
+                            <div style="font-size:12px; color:#888; margin-top:5px;">
+                                ${sizeList.map(([size, qty]) => `${size}:${qty}`).join(' | ')}
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
             
-            displayPagination(totalPages);
+            displayPagination();
         }
 
-        function displayPagination(totalPages) {
+        // ==================== SHOW DETAILS ====================
+        function showDetails(designNo) {
+            const design = inventoryData.find(d => d.designNo === designNo);
+            if (!design) return;
+            
+            const sizeList = Object.entries(design.sizes || {});
+            const sizeText = sizeList.map(([size, qty]) => `Size ${size}: ${qty} pieces`).join('\n');
+            
+            alert(
+                `📋 COSTUME DETAILS\n━━━━━━━━━━━━━━━━━━━━\n` +
+                `Design #: ${design.designNo}\n` +
+                `Name: ${design.productName || 'N/A'}\n` +
+                `Color: ${design.color || 'Various'}\n` +
+                `Type: ${design.garmentType || 'Costume'}\n` +
+                `Total Pieces: ${design.totalPieces}\n` +
+                `━━━━━━━━━━━━━━━━━━━━\n` +
+                `Sizes Available:\n${sizeText}`
+            );
+        }
+
+        // ==================== PAGINATION ====================
+        function displayPagination() {
+            const totalPages = Math.ceil(inventoryData.length / itemsPerPage);
             const paginationDiv = document.getElementById('pagination');
-            if (totalPages <= 1) { paginationDiv.innerHTML = ''; return; }
+            
+            if (totalPages <= 1) {
+                paginationDiv.innerHTML = '';
+                return;
+            }
             
             let html = '';
-            if (currentPage > 1) html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})">← Prev</button>`;
+            if (currentPage > 1) {
+                html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})">← Prev</button>`;
+            }
             
             for (let i = 1; i <= Math.min(totalPages, 5); i++) {
                 html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
             }
             
-            if (currentPage < totalPages) html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">Next →</button>`;
+            if (currentPage < totalPages) {
+                html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">Next →</button>`;
+            }
+            
             paginationDiv.innerHTML = html;
         }
 
@@ -245,306 +242,8 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ==================== DETAILS MODAL ====================
-        function showDetails(designNo) {
-            const design = inventoryData.find(d => d.designNo === designNo);
-            if (!design) return;
-            
-            const imageUrl = getImageUrl(design.designNo);
-            
-            let itemsHtml = '';
-            if (design.items && design.items.length > 0) {
-                itemsHtml = design.items.map((item, index) => {
-                    const locationDisplay = getLocationDisplay(item.locCode);
-                    
-                    return `
-                        <div class="item-detail-row">
-                            <span class="label">Item ${index + 1}</span>
-                            <span class="value">
-                                Size: ${item.size || 'N/A'}
-                                ${item.tagId ? `<span class="barcode-tag">🔢 ${item.tagId}</span>` : '<span class="missing-tag">No barcode</span>'}
-                                <div class="location-display">${locationDisplay}</div>
-                            </span>
-                        </div>
-                    `;
-                }).join('');
-            } else {
-                itemsHtml = `
-                    <div class="info-box">
-                        ⚠️ Individual item details (barcodes/locations) not available for this design.
-                    </div>
-                `;
-            }
-            
-            const sizeSummary = Object.entries(design.sizes)
-                .map(([size, qty]) => `Size ${size}: ${qty} piece${qty !== 1 ? 's' : ''}`)
-                .join('<br>');
-            
-            document.getElementById('modalTitle').textContent = design.productName;
-            document.getElementById('modalBody').innerHTML = `
-                <img class="modal-image" src="${imageUrl}" 
-                     onerror="this.style.display='none'">
-                
-                <div class="item-detail-row">
-                    <span class="label">Design #</span>
-                    <span class="value">${design.designNo}</span>
-                </div>
-                <div class="item-detail-row">
-                    <span class="label">Color</span>
-                    <span class="value">${design.color || 'Various'}</span>
-                </div>
-                <div class="item-detail-row">
-                    <span class="label">Type</span>
-                    <span class="value">${design.garmentType || 'Costume'}</span>
-                </div>
-                <div class="item-detail-row">
-                    <span class="label">Total Pieces</span>
-                    <span class="value">${design.totalPieces}</span>
-                </div>
-                
-                <h4 style="margin: 15px 0 10px;">📏 Sizes Available:</h4>
-                <div class="info-box">${sizeSummary}</div>
-                
-                <h4 style="margin: 15px 0 10px;">🔢 Individual Items (Barcodes & Locations):</h4>
-                ${itemsHtml}
-                
-                <div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 8px;">
-                    <small>💡 Items with barcodes and locations can be tracked precisely in the warehouse.</small>
-                </div>
-            `;
-            
-            document.getElementById('detailModal').style.display = 'flex';
-        }
-
-        function closeDetailModal() {
-            document.getElementById('detailModal').style.display = 'none';
-        }
-
-        // ==================== CART FUNCTIONS ====================
-        function addToCart(designNo, size, availableQty) {
-            const design = inventoryData.find(d => d.designNo === designNo);
-            if (!design) return;
-            
-            if (availableQty <= 0) {
-                alert('❌ This size is currently out of stock.');
-                return;
-            }
-            
-            const qty = parseInt(prompt(`Enter quantity for ${design.productName}\nSize: ${size}\nAvailable: ${availableQty}`, '1'));
-            if (isNaN(qty) || qty < 1) return;
-            if (qty > availableQty) { alert(`Only ${availableQty} pieces available in Size ${size}`); return; }
-            
-            const existingItem = cart.find(item => item.designNo === designNo && item.size === size);
-            if (existingItem) {
-                if (existingItem.quantity + qty > availableQty) {
-                    alert(`Cannot add ${qty} more. Only ${availableQty - existingItem.quantity} remaining.`);
-                    return;
-                }
-                existingItem.quantity += qty;
-            } else {
-                cart.push({
-                    designNo: designNo,
-                    name: design.productName,
-                    size: size,
-                    quantity: qty,
-                    color: design.color || 'Various',
-                    type: design.garmentType || 'Costume'
-                });
-            }
-            
-            sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-            updateCartDisplay();
-            alert(`✓ Added ${qty}x ${design.productName} (Size ${size}) to your order`);
-        }
-
-        function updateCartDisplay() {
-            const cartItemsDiv = document.getElementById('cartItems');
-            const cartCount = document.getElementById('cartCount');
-            const totalItemsSpan = document.getElementById('totalItems');
-            
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`;
-            totalItemsSpan.textContent = totalItems;
-            
-            if (cart.length === 0) {
-                cartItemsDiv.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">Your cart is empty</div>';
-                return;
-            }
-            
-            cartItemsDiv.innerHTML = cart.map((item, index) => `
-                <div class="cart-item">
-                    <div class="cart-item-details">
-                        <strong>${item.name.substring(0, 30)}</strong>
-                    </div>
-                    <div class="cart-item-details">
-                        <span>Size: ${item.size}</span>
-                        <span>Qty: ${item.quantity}</span>
-                    </div>
-                    <button onclick="removeFromCart(${index})" style="background:#dc3545; color:white; border:none; padding:2px 8px; border-radius:4px; margin-top:5px; font-size:11px;">Remove</button>
-                </div>
-            `).join('');
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-            updateCartDisplay();
-        }
-
-        function clearCart() {
-            if (confirm('Clear all items from your order?')) {
-                cart = [];
-                sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-                updateCartDisplay();
-            }
-        }
-
-        function placeOrder() {
-            if (cart.length === 0) {
-                alert('Your cart is empty. Please add items to place an order.');
-                return;
-            }
-            
-            const schoolName = sessionStorage.getItem('schoolName');
-            const schoolEmail = sessionStorage.getItem('schoolEmail');
-            const schoolPhone = sessionStorage.getItem('schoolPhone') || 'Not provided';
-            const schoolAddress = sessionStorage.getItem('schoolAddress') || 'Not provided';
-            
-            let orderItems = cart.map(cartItem => {
-                const design = inventoryData.find(d => d.designNo === cartItem.designNo);
-                const individualItems = design?.items?.filter(item => 
-                    item.size === cartItem.size && item.status === 'available'
-                ) || [];
-                
-                if (individualItems.length > 0) {
-                    const selectedItems = individualItems.slice(0, cartItem.quantity);
-                    return {
-                        ...cartItem,
-                        items: selectedItems.map(item => ({
-                            barcode: item.tagId || 'N/A',
-                            locationCode: item.locCode || 'N/A',
-                            locationDisplay: getLocationDisplay(item.locCode)
-                        }))
-                    };
-                } else {
-                    return {
-                        ...cartItem,
-                        items: [{
-                            barcode: 'N/A (No barcode data)',
-                            locationCode: 'N/A (No location data)',
-                            locationDisplay: '📍 No location available'
-                        }]
-                    };
-                }
-            });
-            
-            let orderSummary = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🏫 SCHOOL ORDER REQUEST
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-School Name: ${schoolName}
-Email: ${schoolEmail}
-Phone: ${schoolPhone}
-Address: ${schoolAddress}
-Order Date: ${new Date().toLocaleString()}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📦 ORDER ITEMS WITH BARCODES & LOCATIONS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`;
-            
-            let totalItems = 0;
-            orderItems.forEach(item => {
-                totalItems += item.quantity;
-                orderSummary += `
-${item.name} (Design #${item.designNo})
-  Type: ${item.type || 'Costume'} | Color: ${item.color || 'Various'}
-  Size: ${item.size} | Quantity: ${item.quantity}
-  ────────────────────────────────────────
-  Individual Items for Picking:
-`;
-                item.items.forEach((individual, idx) => {
-                    orderSummary += `
-    Item ${idx + 1}:
-    🔢 Barcode: ${individual.barcode}
-    📍 Location: ${individual.locationDisplay}
-`;
-                });
-                orderSummary += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-            });
-            
-            orderSummary += `
-📊 ORDER SUMMARY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Total Items: ${totalItems}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔴 ACTION REQUIRED - WAREHOUSE PICKING:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Please use the barcodes and locations above to pick the items.
-`;
-
-            const orderId = 'ORD-' + Date.now();
-            const orders = JSON.parse(localStorage.getItem('allOrders') || '[]');
-            orders.push({
-                orderId: orderId,
-                schoolName: schoolName,
-                schoolEmail: schoolEmail,
-                phone: schoolPhone,
-                address: schoolAddress,
-                date: new Date().toISOString(),
-                items: orderItems,
-                totalItems: totalItems,
-                status: 'pending',
-                orderSummary: orderSummary
-            });
-            localStorage.setItem('allOrders', JSON.stringify(orders));
-            
-            const subject = encodeURIComponent(`Order Request from ${schoolName} - ${new Date().toLocaleDateString()}`);
-            const body = encodeURIComponent(orderSummary);
-            window.location.href = `mailto:orders@costumestore.com?subject=${subject}&body=${body}`;
-            
-            cart = [];
-            sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-            updateCartDisplay();
-            
-            setTimeout(() => {
-                alert(`✅ ORDER PLACED!\n\nOrder ID: ${orderId}\n\n📦 Barcodes and locations included in the email for warehouse picking.`);
-            }, 1000);
-        }
-
-        // ==================== EVENT LISTENERS ====================
-        document.getElementById('searchInput').addEventListener('input', () => {
-            currentPage = 1;
-            displayCostumes();
-        });
-        document.getElementById('typeFilter').addEventListener('change', () => {
-            currentPage = 1;
-            displayCostumes();
-        });
-        document.getElementById('availabilityFilter').addEventListener('change', () => {
-            currentPage = 1;
-            displayCostumes();
-        });
-
-        document.getElementById('detailModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeDetailModal();
-            }
-        });
-
-        window.goToPage = goToPage;
-        window.showDetails = showDetails;
-        window.closeDetailModal = closeDetailModal;
-        window.addToCart = addToCart;
-        window.removeFromCart = removeFromCart;
-        window.clearCart = clearCart;
-        window.placeOrder = placeOrder;
-
-        loadLocationMaster();
+        // ==================== INITIALIZE ====================
         loadInventory();
-        updateCartDisplay();
     </script>
 </body>
 </html>
