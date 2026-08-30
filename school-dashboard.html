@@ -3,68 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Dashboard - Costume Store</title>
+    <title>Costume Store</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 20px; }
-        .container { max-width: 1600px; margin: 0 auto; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 10px; }
+        .container { max-width: 100%; margin: 0 auto; }
 
+        /* ===== HEADER ===== */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
         }
 
-        .school-info { background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 8px; font-size: 13px; }
-        .logout-btn { background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; }
-        .cart-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; }
-        .cart-btn:hover { background: rgba(255,255,255,0.3); }
+        .header h1 { font-size: 18px; }
+        .header-right { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .logout-btn { background: rgba(255,255,255,0.2); color: white; padding: 5px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; }
+        .cart-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
 
+        /* ===== FILTERS (Simple) ===== */
         .filters {
             background: white;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
             align-items: center;
         }
-
-        .filter-input { padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; flex: 1; min-width: 120px; }
+        .filter-input {
+            padding: 6px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            flex: 1;
+            min-width: 100px;
+        }
         .filter-input:focus { outline: none; border-color: #667eea; }
-        .stats { font-size: 13px; color: #666; margin-left: auto; }
-        .stats strong { color: #667eea; }
+        .stats { font-size: 13px; color: #666; }
 
+        /* ===== IMAGE GRID - FILLS SCREEN ===== */
         .image-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
         .costume-card {
             background: white;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 6px rgba(0,0,0,0.06);
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            aspect-ratio: 1 / 1;
         }
 
-        .costume-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+        .costume-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
 
         .image-container {
             width: 100%;
-            height: 160px;
+            height: 100%;
             background: #f0f0f0;
             overflow: hidden;
-            position: relative;
         }
 
         .costume-image {
@@ -74,36 +86,41 @@
             transition: transform 0.3s;
         }
 
-        .costume-card:hover .costume-image { transform: scale(1.03); }
-
-        .stock-badge {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 9px;
-            font-weight: bold;
-            color: white;
+        .costume-card:hover .costume-image {
+            transform: scale(1.04);
         }
-        .stock-available { background: rgba(76, 175, 80, 0.85); }
-        .stock-limited { background: rgba(255, 152, 0, 0.85); }
-        .stock-none { background: rgba(244, 67, 54, 0.85); }
-        .stock-unknown { background: rgba(150, 150, 150, 0.85); }
 
-        .costume-info { padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; }
-        .costume-name { font-weight: 600; font-size: 11px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .piece-count { font-size: 10px; color: #667eea; font-weight: 600; background: #eef0ff; padding: 2px 8px; border-radius: 10px; }
+        /* ===== PAGINATION ===== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
 
-        .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 20px; flex-wrap: wrap; }
-        .page-btn { padding: 6px 12px; background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .page-btn {
+            padding: 6px 14px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
         .page-btn.active { background: #667eea; color: white; border-color: #667eea; }
         .page-btn:hover:not(.active) { background: #f0f0f0; }
 
-        .loading { text-align: center; padding: 30px; color: #999; }
-        .no-results { text-align: center; padding: 30px; color: #999; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+        .no-results { text-align: center; padding: 40px; color: #999; }
 
-        /* ===== MODAL ===== */
+        /* ===== MODAL (Image Preview) ===== */
         .modal {
             display: none;
             position: fixed;
@@ -111,44 +128,89 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.85);
             z-index: 1000;
             justify-content: center;
             align-items: center;
             backdrop-filter: blur(4px);
+            padding: 20px;
         }
+
         .modal.active { display: flex; }
 
         .modal-content {
             background: white;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             border-radius: 16px;
             padding: 20px;
-            max-height: 85vh;
+            max-height: 90vh;
             overflow-y: auto;
+            position: relative;
         }
 
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .modal-header h3 { font-size: 18px; color: #333; }
-        .modal-close { font-size: 28px; cursor: pointer; background: none; border: none; color: #999; }
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 28px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #999;
+            z-index: 10;
+        }
+
         .modal-close:hover { color: #333; }
 
-        .modal-image { width: 100%; border-radius: 10px; margin-bottom: 15px; }
+        .modal-image {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
 
-        .modal-detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
-        .modal-detail-row .label { color: #888; }
-        .modal-detail-row .value { font-weight: 500; }
+        .modal-info {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .modal-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .modal-info-row .label { color: #888; }
+        .modal-info-row .value { font-weight: 500; }
+
+        .modal-no-data {
+            font-size: 13px;
+            color: #999;
+            font-style: italic;
+            padding: 4px 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .modal-sizes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
 
         .modal-size-btn {
             background: #f0f0f0;
             border: 1px solid #ddd;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 5px;
             font-size: 12px;
             cursor: pointer;
-            margin: 3px;
         }
+
         .modal-size-btn:hover { background: #667eea; color: white; }
 
         .modal-add-btn {
@@ -159,9 +221,11 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 12px;
             width: 100%;
+            font-size: 14px;
         }
+
         .modal-add-btn:hover { background: #43a047; }
 
         .modal-location {
@@ -172,17 +236,8 @@
             border-radius: 4px;
             margin-top: 4px;
         }
-        .modal-no-data {
-            font-size: 12px;
-            color: #999;
-            font-style: italic;
-            padding: 4px 8px;
-            background: #f5f5f5;
-            border-radius: 4px;
-            margin-top: 4px;
-        }
 
-        /* ===== CART ===== */
+        /* ===== CART (Sliding Panel) ===== */
         .cart-panel {
             position: fixed;
             right: 0;
@@ -196,6 +251,7 @@
             transition: transform 0.3s ease;
             overflow-y: auto;
         }
+
         .cart-panel.open { transform: translateX(0); }
 
         .cart-header {
@@ -208,16 +264,48 @@
             position: sticky;
             top: 0;
         }
+
         .cart-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
 
         .cart-items { padding: 15px; }
-        .cart-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 13px; }
+        .cart-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            font-size: 13px;
+        }
+
         .cart-item-details { display: flex; justify-content: space-between; }
 
-        .cart-summary { padding: 15px; border-top: 2px solid #eee; background: #f8f9fa; position: sticky; bottom: 0; }
-        .cart-order-btn { width: 100%; padding: 10px; background: #4caf50; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .cart-summary {
+            padding: 15px;
+            border-top: 2px solid #eee;
+            background: #f8f9fa;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .cart-order-btn {
+            width: 100%;
+            padding: 10px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
         .cart-order-btn:hover { background: #43a047; }
-        .cart-clear-btn { width: 100%; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 5px; }
+        .cart-clear-btn {
+            width: 100%;
+            padding: 8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
 
         .overlay {
             display: none;
@@ -229,12 +317,23 @@
             background: rgba(0,0,0,0.4);
             z-index: 150;
         }
+
         .overlay.active { display: block; }
 
         @media (max-width: 768px) {
-            .image-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
-            .image-container { height: 120px; }
+            .image-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 6px;
+            }
+            .header h1 { font-size: 16px; }
             .cart-panel { width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .image-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 4px;
+            }
         }
     </style>
 </head>
@@ -242,24 +341,23 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div><h1 style="font-size: 20px;">🎭 Costume Store</h1></div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="school-info">🏫 <span id="schoolName"></span></span>
+            <h1>🎭 Costume Store</h1>
+            <div class="header-right">
+                <span id="schoolName"></span>
                 <button class="cart-btn" onclick="toggleCart()">🛒 <span id="cartCount">0</span></button>
-                <a href="logout.html" class="logout-btn">🚪 Logout</a>
+                <a href="logout.html" class="logout-btn">🚪</a>
             </div>
         </div>
 
         <!-- Filters -->
         <div class="filters">
-            <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by design number...">
-            <select class="filter-input" id="typeFilter"><option value="all">All Types</option></select>
-            <span class="stats">📦 <strong id="totalDesigns">0</strong> designs</span>
+            <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search design number...">
+            <span class="stats" id="imageCount">0 images</span>
         </div>
 
         <!-- Image Grid -->
         <div class="image-grid" id="imageGrid">
-            <div class="loading">Loading costumes...</div>
+            <div class="loading">Loading images...</div>
         </div>
 
         <!-- Pagination -->
@@ -269,11 +367,9 @@
     <!-- Modal -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">Costume Details</h3>
-                <button class="modal-close" onclick="closeDetailModal()">&times;</button>
-            </div>
-            <div id="modalBody"></div>
+            <button class="modal-close" onclick="closeDetailModal()">&times;</button>
+            <img class="modal-image" id="modalImage" src="" alt="">
+            <div id="modalInfo" class="modal-info"></div>
         </div>
     </div>
 
@@ -297,36 +393,21 @@
         if (!sessionStorage.getItem('loggedIn')) {
             window.location.href = 'login.html';
         }
-        document.getElementById('schoolName').textContent = sessionStorage.getItem('schoolName') || 'School';
+        document.getElementById('schoolName').textContent = '🏫 ' + (sessionStorage.getItem('schoolName') || 'School');
 
         // ==================== CONFIG ====================
         const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
         const BUCKET_NAME = 'costume-images';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg';
-        const itemsPerPage = 30;
+        const itemsPerPage = 40;
         let currentPage = 1;
+        let imageList = [];
         let inventoryData = {};
         let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
         let locationMaster = {};
 
         function getImageUrl(designNo) {
             return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${designNo}.jpg`;
-        }
-
-        // ==================== LOAD LOCATION MASTER ====================
-        async function loadLocationMaster() {
-            try {
-                const response = await fetch('/api/locations');
-                const result = await response.json();
-                if (result.success) locationMaster = result.locations;
-            } catch (err) {}
-        }
-
-        function getLocationDisplay(locCode) {
-            if (!locCode) return 'No location';
-            const loc = locationMaster[String(locCode).trim()];
-            if (loc) return loc.display || `Rack ${loc.rack}, Shelf ${loc.shelf}, Position ${loc.position}`;
-            return 'Location not mapped';
         }
 
         // ==================== LOAD DATA ====================
@@ -337,84 +418,66 @@
                 data.forEach(item => {
                     inventoryData[item.designNo] = item;
                 });
-                console.log('✅ Loaded inventory data:', Object.keys(inventoryData).length);
             }
         }
 
-        // ==================== GET IMAGES FROM SUPABASE (Using image_list table) ====================
+        // ==================== GET LOCATION ====================
+        async function loadLocationMaster() {
+            try {
+                const response = await fetch('/api/locations');
+                const result = await response.json();
+                if (result.success) locationMaster = result.locations;
+            } catch (err) {}
+        }
+
+        function getLocationDisplay(locCode) {
+            if (!locCode) return null;
+            const loc = locationMaster[String(locCode).trim()];
+            if (loc) return loc.display || `Rack ${loc.rack}, Shelf ${loc.shelf}, Position ${loc.position}`;
+            return null;
+        }
+
+        // ==================== LOAD IMAGES ====================
         async function loadImages() {
             try {
                 const grid = document.getElementById('imageGrid');
                 grid.innerHTML = '<div class="loading">📸 Loading images...</div>';
 
-                // Get image list from Supabase table (this works!)
+                // Get image list from Supabase table
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/image_list?select=design_no`, {
-                    method: 'GET',
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     }
                 });
                 const data = await response.json();
-                const imageNames = data.map(item => item.design_no);
+                imageList = data.map(item => item.design_no);
 
-                console.log('📸 Images found:', imageNames.length);
-
-                if (imageNames.length === 0) {
-                    grid.innerHTML = '<div class="no-results">No images found. Please contact admin.</div>';
+                if (imageList.length === 0) {
+                    grid.innerHTML = '<div class="no-results">No images found.</div>';
                     return;
                 }
 
-                // Build display list - images first, data in background
-                const designsToShow = imageNames.map(designNo => {
-                    const data = inventoryData[designNo];
-                    return {
-                        designNo: designNo,
-                        productName: data ? data.productName : `Design ${designNo}`,
-                        totalPieces: data ? (data.totalPieces || Object.values(data.sizes || {}).reduce((a, b) => a + b, 0)) : 0,
-                        hasData: !!data,
-                        data: data
-                    };
-                });
+                document.getElementById('imageCount').textContent = imageList.length + ' images';
 
                 // Paginate
-                const totalPages = Math.ceil(designsToShow.length / itemsPerPage);
+                const totalPages = Math.ceil(imageList.length / itemsPerPage);
                 const start = (currentPage - 1) * itemsPerPage;
                 const end = start + itemsPerPage;
-                const pageItems = designsToShow.slice(start, end);
+                const pageItems = imageList.slice(start, end);
 
-                document.getElementById('totalDesigns').textContent = designsToShow.length;
-
-                // Display
-                grid.innerHTML = pageItems.map(item => {
-                    const imageUrl = getImageUrl(item.designNo);
-                    let stockClass = 'stock-unknown';
-                    let stockText = '...';
-                    
-                    if (item.hasData) {
-                        const total = item.totalPieces;
-                        if (total === 0) { stockClass = 'stock-none'; stockText = 'Out'; }
-                        else if (total <= 2) { stockClass = 'stock-limited'; stockText = 'Low'; }
-                        else { stockClass = 'stock-available'; stockText = 'In'; }
-                    }
-
-                    return `
-                        <div class="costume-card" onclick="showDetails('${item.designNo}')">
-                            <div class="image-container">
-                                <img class="costume-image" 
-                                     src="${imageUrl}" 
-                                     alt="${item.productName}"
-                                     loading="lazy"
-                                     onerror="this.style.display='none'">
-                                <div class="stock-badge ${stockClass}">${stockText}</div>
-                            </div>
-                            <div class="costume-info">
-                                <span class="costume-name">${item.productName}</span>
-                                <span class="piece-count">${item.hasData ? item.totalPieces : '?'}</span>
-                            </div>
+                // Display images only (no data processing)
+                grid.innerHTML = pageItems.map(designNo => `
+                    <div class="costume-card" onclick="showDetails('${designNo}')">
+                        <div class="image-container">
+                            <img class="costume-image" 
+                                 src="${getImageUrl(designNo)}" 
+                                 alt="${designNo}"
+                                 loading="lazy"
+                                 onerror="this.style.display='none'">
                         </div>
-                    `;
-                }).join('');
+                    </div>
+                `).join('');
 
                 // Pagination
                 const paginationDiv = document.getElementById('pagination');
@@ -423,18 +486,16 @@
                 } else {
                     let html = '';
                     if (currentPage > 1) html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})">←</button>`;
-                    for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                    for (let i = 1; i <= totalPages; i++) {
                         html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
                     }
                     if (currentPage < totalPages) html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">→</button>`;
                     paginationDiv.innerHTML = html;
                 }
 
-                console.log('✅ Displayed', pageItems.length, 'images');
-
             } catch (err) {
-                console.error('Error loading images:', err);
-                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ Error loading images. Please check console.</div>';
+                console.error('Error:', err);
+                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ Error loading images.</div>';
             }
         }
 
@@ -444,54 +505,55 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ==================== DETAILS ====================
+        // ==================== SHOW DETAILS (Image + Data) ====================
         function showDetails(designNo) {
             const data = inventoryData[designNo];
             const imageUrl = getImageUrl(designNo);
-            
-            if (!data) {
-                document.getElementById('modalTitle').textContent = `Design #${designNo}`;
-                document.getElementById('modalBody').innerHTML = `
-                    <img class="modal-image" src="${imageUrl}" onerror="this.style.display='none'">
+
+            document.getElementById('modalImage').src = imageUrl;
+            document.getElementById('modalImage').onerror = function() { this.style.display = 'none'; };
+
+            let html = '';
+
+            if (data) {
+                const sizes = data.sizes || {};
+                const totalPieces = data.totalPieces || Object.values(sizes).reduce((a, b) => a + b, 0);
+
+                // Location
+                let locationText = '';
+                if (data.items && data.items.length > 0) {
+                    const locs = data.items.map(item => getLocationDisplay(item.locCode)).filter(l => l);
+                    if (locs.length > 0) locationText = `<div class="modal-location">📍 ${locs[0]}</div>`;
+                }
+
+                // Sizes
+                let sizeHtml = '';
+                for (const [size, qty] of Object.entries(sizes)) {
+                    sizeHtml += `<button class="modal-size-btn" onclick="addToCart('${designNo}', '${size}', ${qty})">${size} (${qty})</button>`;
+                }
+
+                html = `
+                    <div class="modal-info-row"><span class="label">Design #</span><span class="value">${designNo}</span></div>
+                    <div class="modal-info-row"><span class="label">Name</span><span class="value">${data.productName || '-'}</span></div>
+                    <div class="modal-info-row"><span class="label">Color</span><span class="value">${data.color || 'Various'}</span></div>
+                    <div class="modal-info-row"><span class="label">Type</span><span class="value">${data.garmentType || 'Costume'}</span></div>
+                    <div class="modal-info-row"><span class="label">Total Pieces</span><span class="value">${totalPieces}</span></div>
+                    ${locationText}
+                    <div style="margin-top: 12px;">
+                        <strong>Sizes:</strong>
+                        <div class="modal-sizes">${sizeHtml || 'No sizes available'}</div>
+                    </div>
+                    <button class="modal-add-btn" onclick="addToCart('${designNo}', '', 0)">🛒 Add to Order</button>
+                `;
+            } else {
+                html = `
                     <div class="modal-no-data">⚠️ No inventory data available for this design.</div>
-                    <div class="modal-detail-row"><span class="label">Design #</span><span class="value">${designNo}</span></div>
+                    <div class="modal-info-row"><span class="label">Design #</span><span class="value">${designNo}</span></div>
                     <button class="modal-add-btn" onclick="closeDetailModal()">Close</button>
                 `;
-                document.getElementById('detailModal').classList.add('active');
-                return;
             }
 
-            const sizes = data.sizes || {};
-            const totalPieces = data.totalPieces || Object.values(sizes).reduce((a, b) => a + b, 0);
-
-            let sizeHtml = '';
-            for (const [size, qty] of Object.entries(sizes)) {
-                sizeHtml += `<button class="modal-size-btn" onclick="addToCart('${designNo}', '${size}', ${qty})">${size} (${qty})</button>`;
-            }
-
-            let locationHtml = '';
-            if (data.items && data.items.length > 0) {
-                const locs = data.items.map(item => getLocationDisplay(item.locCode)).filter(l => l && l !== 'No location');
-                if (locs.length > 0) {
-                    locationHtml = `<div class="modal-location">📍 ${locs[0]}</div>`;
-                }
-            }
-
-            document.getElementById('modalTitle').textContent = data.productName || `Design ${designNo}`;
-            document.getElementById('modalBody').innerHTML = `
-                <img class="modal-image" src="${imageUrl}" onerror="this.style.display='none'">
-                <div class="modal-detail-row"><span class="label">Design #</span><span class="value">${designNo}</span></div>
-                <div class="modal-detail-row"><span class="label">Color</span><span class="value">${data.color || 'Various'}</span></div>
-                <div class="modal-detail-row"><span class="label">Type</span><span class="value">${data.garmentType || 'Costume'}</span></div>
-                <div class="modal-detail-row"><span class="label">Total Pieces</span><span class="value">${totalPieces}</span></div>
-                ${locationHtml}
-                <div style="margin-top: 12px;">
-                    <strong>Sizes:</strong>
-                    <div style="margin-top: 6px;">${sizeHtml || 'No sizes available'}</div>
-                </div>
-                <button class="modal-add-btn" onclick="closeDetailModal()">Close</button>
-            `;
-
+            document.getElementById('modalInfo').innerHTML = html;
             document.getElementById('detailModal').classList.add('active');
         }
 
@@ -508,6 +570,16 @@
         function addToCart(designNo, size, availableQty) {
             const data = inventoryData[designNo];
             if (!data) { alert('No data available for this design'); return; }
+
+            // If size is empty (from "Add to Order" button), ask for size
+            if (!size) {
+                const sizeOptions = Object.keys(data.sizes || {});
+                if (sizeOptions.length === 0) { alert('No sizes available'); return; }
+                size = prompt(`Select size for ${data.productName || designNo}\nAvailable: ${sizeOptions.join(', ')}`, sizeOptions[0]);
+                if (!size || !sizeOptions.includes(size)) { alert('Invalid size'); return; }
+                availableQty = data.sizes[size] || 0;
+            }
+
             if (availableQty <= 0) { alert('Out of stock'); return; }
 
             const qty = parseInt(prompt(`Enter quantity for ${data.productName}\nSize: ${size}\nAvailable: ${availableQty}`, '1'));
@@ -585,9 +657,20 @@
         }
 
         // ==================== EVENTS ====================
-        document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; loadImages(); });
-        document.getElementById('typeFilter').addEventListener('change', () => { currentPage = 1; loadImages(); });
-        document.getElementById('detailModal').addEventListener('click', function(e) { if (e.target === this) closeDetailModal(); });
+        document.getElementById('searchInput').addEventListener('input', () => {
+            // Simple search filter
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const grid = document.getElementById('imageGrid');
+            const cards = grid.querySelectorAll('.costume-card');
+            cards.forEach(card => {
+                const designNo = card.getAttribute('data-design') || '';
+                card.style.display = designNo.includes(term) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDetailModal();
+        });
 
         // ==================== GLOBALS ====================
         window.goToPage = goToPage;
