@@ -8,7 +8,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; }
-
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -20,14 +19,12 @@
             align-items: center;
             flex-wrap: wrap;
         }
-
         .school-info {
             background: rgba(255,255,255,0.2);
             padding: 8px 15px;
             border-radius: 10px;
             font-size: 14px;
         }
-
         .logout-btn {
             background: rgba(255,255,255,0.2);
             color: white;
@@ -35,8 +32,6 @@
             border-radius: 8px;
             text-decoration: none;
         }
-
-        /* ========== CART PANEL ========== */
         .cart-panel {
             position: fixed;
             right: 20px;
@@ -49,7 +44,6 @@
             max-height: 75vh;
             overflow-y: auto;
         }
-
         .cart-header {
             background: #667eea;
             color: white;
@@ -60,18 +54,13 @@
             position: sticky;
             top: 0;
         }
-
         .cart-items { padding: 15px; max-height: 350px; overflow-y: auto; }
         .cart-item { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 13px; }
         .cart-item-details { display: flex; justify-content: space-between; margin-bottom: 5px; }
-
         .cart-summary { padding: 15px; border-top: 2px solid #eee; background: #f8f9fa; }
         .order-btn { width: 100%; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .clear-cart-btn { width: 100%; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 5px; }
-
         .main-content { margin-right: 410px; }
-
-        /* ========== FILTERS ========== */
         .filters {
             background: white;
             padding: 20px;
@@ -81,7 +70,6 @@
             gap: 15px;
             flex-wrap: wrap;
         }
-
         .filter-input {
             flex: 1;
             padding: 10px;
@@ -90,9 +78,7 @@
             font-size: 14px;
             min-width: 150px;
         }
-
         .filter-input:focus { outline: none; border-color: #667eea; }
-
         .stats-bar {
             background: white;
             padding: 15px 20px;
@@ -103,17 +89,13 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-
         .stat-item { font-size: 14px; }
         .stat-item strong { color: #667eea; font-size: 1.2rem; }
-
-        /* ========== IMAGE GRID ========== */
         .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 20px;
         }
-
         .costume-card {
             background: white;
             border-radius: 12px;
@@ -122,9 +104,7 @@
             transition: transform 0.2s;
             cursor: pointer;
         }
-
         .costume-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
-
         .image-container {
             width: 100%;
             height: 220px;
@@ -132,13 +112,11 @@
             overflow: hidden;
             position: relative;
         }
-
         .costume-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
         .stock-overlay {
             position: absolute;
             top: 10px;
@@ -152,18 +130,15 @@
         .stock-available { background: #4caf50; }
         .stock-limited { background: #ff9800; }
         .stock-none { background: #f44336; }
-
         .costume-info { padding: 12px; }
         .costume-name { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
         .costume-design { color: #888; font-size: 11px; margin: 3px 0; }
-
         .size-buttons {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
             margin-top: 8px;
         }
-
         .size-btn {
             background: #f0f0f0;
             border: 1px solid #ddd;
@@ -173,10 +148,8 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-
         .size-btn:hover { background: #667eea; color: white; }
         .size-btn.disabled { opacity: 0.5; cursor: not-allowed; text-decoration: line-through; }
-
         .pagination {
             display: flex;
             justify-content: center;
@@ -184,7 +157,6 @@
             margin-top: 30px;
             flex-wrap: wrap;
         }
-
         .page-btn {
             padding: 8px 12px;
             background: white;
@@ -192,13 +164,9 @@
             border-radius: 6px;
             cursor: pointer;
         }
-
         .page-btn.active { background: #667eea; color: white; }
-
         .no-results { text-align: center; padding: 50px; color: #666; }
         .loading { text-align: center; padding: 50px; color: #666; }
-
-        /* ========== DETAIL MODAL ========== */
         .modal {
             display: none;
             position: fixed;
@@ -211,7 +179,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .modal-content {
             background: white;
             max-width: 550px;
@@ -221,13 +188,11 @@
             max-height: 80vh;
             overflow-y: auto;
         }
-
         .modal-image {
             width: 100%;
             border-radius: 10px;
             margin-bottom: 15px;
         }
-
         .modal-close {
             float: right;
             font-size: 28px;
@@ -235,7 +200,6 @@
             background: none;
             border: none;
         }
-
         .item-detail-row {
             display: flex;
             justify-content: space-between;
@@ -243,10 +207,8 @@
             border-bottom: 1px solid #f0f0f0;
             font-size: 13px;
         }
-
         .item-detail-row .label { color: #888; }
         .item-detail-row .value { font-weight: 500; }
-
         .barcode-tag {
             display: inline-block;
             background: #e3f2fd;
@@ -256,7 +218,6 @@
             font-size: 11px;
             font-family: monospace;
         }
-
         .location-display {
             font-size: 12px;
             color: #333;
@@ -265,7 +226,6 @@
             background: #f0f7ff;
             border-radius: 4px;
         }
-
         .info-box {
             background: #f8f9fa;
             padding: 12px;
@@ -273,7 +233,6 @@
             margin: 10px 0;
             border-left: 3px solid #667eea;
         }
-
         @media (max-width: 768px) {
             .cart-panel { position: static; width: 100%; margin-bottom: 20px; }
             .main-content { margin-right: 0; }
@@ -289,14 +248,13 @@
             </div>
             <div>
                 <div class="school-info">
-                    🏫 <span id="schoolNameDisplay"></span><br>
-                    📧 <span id="schoolEmailDisplay"></span>
+                    🏫 <span id="schoolName"></span><br>
+                    📧 <span id="schoolEmail"></span>
                 </div>
                 <a href="logout.html" class="logout-btn" style="margin-top: 10px; display: inline-block;">🚪 Logout</a>
             </div>
         </div>
 
-        <!-- ===== CART PANEL ===== -->
         <div class="cart-panel">
             <div class="cart-header">
                 <span>🛒 My Order</span>
@@ -312,7 +270,6 @@
             </div>
         </div>
 
-        <!-- ===== MAIN CONTENT ===== -->
         <div class="main-content">
             <div class="filters">
                 <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search by design number...">
@@ -337,7 +294,6 @@
         </div>
     </div>
 
-    <!-- ===== DETAIL MODAL ===== -->
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeDetailModal()">&times;</button>
@@ -347,52 +303,44 @@
     </div>
 
     <script>
-        // ==================== CHECK LOGIN ====================
         if (!sessionStorage.getItem('loggedIn')) {
             window.location.href = 'login.html';
         }
+        
+        document.getElementById('schoolName').textContent = sessionStorage.getItem('schoolName') || 'School';
+        document.getElementById('schoolEmail').textContent = sessionStorage.getItem('schoolEmail') || 'No email';
 
-        // ==================== DISPLAY SCHOOL INFO ====================
-        document.getElementById('schoolNameDisplay').textContent = sessionStorage.getItem('schoolName') || 'School';
-        document.getElementById('schoolEmailDisplay').textContent = sessionStorage.getItem('schoolEmail') || 'No email';
-
-        // ==================== CONFIG ====================
         const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
         const BUCKET_NAME = 'costume-images';
-        const itemsPerPage = 20;
-        let currentPage = 1;
-        let inventoryData = [];
-        let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
-        let locationMaster = {};
 
-        // ==================== GET IMAGE URL ====================
         function getImageUrl(designNo) {
             return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${designNo}.jpg`;
         }
 
-        // ==================== LOAD LOCATION MASTER ====================
+        let inventoryData = [];
+        let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
+        let currentPage = 1;
+        const itemsPerPage = 20;
+        let locationMaster = {};
+
         async function loadLocationMaster() {
             try {
                 const response = await fetch('/api/locations');
                 const result = await response.json();
                 if (result.success) {
                     locationMaster = result.locations;
-                    console.log('✅ Location master loaded:', Object.keys(locationMaster).length);
                 }
             } catch (err) {
                 console.log('Could not load location master');
             }
         }
 
-        // ==================== GET LOCATION DISPLAY ====================
         function getLocationDisplay(locCode) {
             if (!locCode || locCode === '') {
                 return '📍 No location assigned';
             }
-            
             const code = String(locCode).trim();
             const loc = locationMaster[code];
-            
             if (loc) {
                 if (loc.display) return `📍 ${loc.display}`;
                 const parts = [];
@@ -402,50 +350,19 @@
                 if (parts.length > 0) return `📍 ${parts.join(', ')}`;
                 return `📍 ${code}`;
             }
-            
             return `📍 ${code} (Location not mapped)`;
         }
 
-        // ==================== GET IMAGE LIST ====================
-        async function getImageList() {
-            try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/image_list?select=design_no`, {
-                    headers: {
-                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg',
-                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg'
-                    }
-                });
-                const data = await response.json();
-                return data.map(item => item.design_no);
-            } catch (err) {
-                console.error('Error fetching image list:', err);
-                return [];
-            }
-        }
-
-        // ==================== LOAD INVENTORY ====================
-        async function loadInventory() {
+        function loadInventory() {
             const saved = localStorage.getItem('inventoryData');
             if (!saved) {
-                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded. Please contact admin.</div>';
+                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ No inventory loaded.</div>';
                 return;
             }
 
             const allData = JSON.parse(saved);
-            
-            // Get image list from Supabase
-            const imageNames = await getImageList();
-            
-            // Only keep designs that have images
-            if (imageNames.length > 0) {
-                inventoryData = allData.filter(item => imageNames.includes(item.designNo));
-            } else {
-                inventoryData = allData;
-            }
-            
+            inventoryData = allData;
             inventoryData.sort((a, b) => a.designNo.localeCompare(b.designNo));
-            
-            console.log('✅ Loaded', inventoryData.length, 'designs with images');
             
             populateFilters();
             displayCostumes();
@@ -453,13 +370,11 @@
             updateCartDisplay();
         }
 
-        // ==================== POPULATE FILTERS ====================
         function populateFilters() {
             const types = new Set();
             inventoryData.forEach(item => {
                 if (item.garmentType) types.add(item.garmentType);
             });
-            
             const typeFilter = document.getElementById('typeFilter');
             typeFilter.innerHTML = '<option value="all">All Types</option>';
             Array.from(types).sort().forEach(type => {
@@ -467,7 +382,6 @@
             });
         }
 
-        // ==================== UPDATE STATS ====================
         function updateStats() {
             const totalDesigns = inventoryData.length;
             const totalAvailable = inventoryData.reduce((sum, d) => sum + d.totalPieces, 0);
@@ -475,12 +389,10 @@
             document.getElementById('totalAvailable').textContent = totalAvailable;
         }
 
-        // ==================== GET FILTERED DATA ====================
         function getFilteredData() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const typeFilter = document.getElementById('typeFilter').value;
             const availabilityFilter = document.getElementById('availabilityFilter').value;
-            
             return inventoryData.filter(item => {
                 const matchesSearch = item.designNo.toLowerCase().includes(searchTerm) || 
                                      item.productName.toLowerCase().includes(searchTerm);
@@ -490,14 +402,12 @@
             });
         }
 
-        // ==================== DISPLAY COSTUMES ====================
         function displayCostumes() {
             const filtered = getFilteredData();
             const totalPages = Math.ceil(filtered.length / itemsPerPage);
             const start = (currentPage - 1) * itemsPerPage;
             const end = start + itemsPerPage;
             const pageItems = filtered.slice(start, end);
-            
             const grid = document.getElementById('imageGrid');
             
             if (pageItems.length === 0) {
@@ -507,19 +417,13 @@
             }
             
             grid.innerHTML = pageItems.map(item => {
-                const sizeList = Object.entries(item.sizes || {});
+                const sizeList = Object.entries(item.sizes);
                 const imageUrl = getImageUrl(item.designNo);
                 const placeholder = `https://via.placeholder.com/250x220?text=📸+${item.designNo}`;
-                
                 let stockClass = 'stock-available';
                 let stockText = 'In Stock';
-                if (item.totalPieces === 0) {
-                    stockClass = 'stock-none';
-                    stockText = 'Out of Stock';
-                } else if (item.totalPieces <= 2) {
-                    stockClass = 'stock-limited';
-                    stockText = 'Limited Stock';
-                }
+                if (item.totalPieces === 0) { stockClass = 'stock-none'; stockText = 'Out of Stock'; } 
+                else if (item.totalPieces <= 2) { stockClass = 'stock-limited'; stockText = 'Limited Stock'; }
                 
                 return `
                     <div class="costume-card" onclick="showDetails('${item.designNo}')">
@@ -533,7 +437,7 @@
                         </div>
                         <div class="costume-info">
                             <div class="costume-name">${item.productName.substring(0, 35)}</div>
-                            <div class="costume-design">🔖 Design #: ${item.designNo}</div>
+                            <div class="costume-design">🔖 ${item.designNo}</div>
                             <div class="costume-design">🎨 ${item.color || 'Various'} | 👗 ${item.garmentType || 'Costume'}</div>
                             <div class="size-buttons">
                                 ${sizeList.map(([size, qty]) => `
@@ -545,37 +449,24 @@
                                 `).join('')}
                             </div>
                             <div style="font-size: 11px; color: #888; margin-top: 5px;">
-                                📦 ${item.totalPieces} piece${item.totalPieces !== 1 ? 's' : ''} available
+                                📦 ${item.totalPieces} pieces
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
-            
             displayPagination(totalPages);
         }
 
-        // ==================== PAGINATION ====================
         function displayPagination(totalPages) {
             const paginationDiv = document.getElementById('pagination');
-            if (totalPages <= 1) {
-                paginationDiv.innerHTML = '';
-                return;
-            }
-            
+            if (totalPages <= 1) { paginationDiv.innerHTML = ''; return; }
             let html = '';
-            if (currentPage > 1) {
-                html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})">← Prev</button>`;
-            }
-            
+            if (currentPage > 1) html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})">← Prev</button>`;
             for (let i = 1; i <= Math.min(totalPages, 5); i++) {
                 html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
             }
-            
-            if (currentPage < totalPages) {
-                html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">Next →</button>`;
-            }
-            
+            if (currentPage < totalPages) html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">Next →</button>`;
             paginationDiv.innerHTML = html;
         }
 
@@ -585,19 +476,15 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ==================== SHOW DETAILS ====================
         function showDetails(designNo) {
             const design = inventoryData.find(d => d.designNo === designNo);
             if (!design) return;
-            
             const imageUrl = getImageUrl(design.designNo);
             const placeholder = `https://via.placeholder.com/400x300?text=📸+${design.designNo}`;
-            
             let itemsHtml = '';
             if (design.items && design.items.length > 0) {
                 itemsHtml = design.items.map((item, index) => {
                     const locationDisplay = getLocationDisplay(item.locCode);
-                    
                     return `
                         <div class="item-detail-row">
                             <span class="label">Item ${index + 1}</span>
@@ -610,50 +497,26 @@
                     `;
                 }).join('');
             } else {
-                itemsHtml = `
-                    <div class="info-box">
-                        ⚠️ Individual item details (barcodes/locations) not available for this design.
-                    </div>
-                `;
+                itemsHtml = `<div class="info-box">⚠️ Individual item details not available.</div>`;
             }
-            
-            const sizeSummary = Object.entries(design.sizes || {})
+            const sizeSummary = Object.entries(design.sizes)
                 .map(([size, qty]) => `Size ${size}: ${qty} piece${qty !== 1 ? 's' : ''}`)
                 .join('<br>');
-            
-            document.getElementById('modalTitle').textContent = design.productName || 'Design ' + design.designNo;
+            document.getElementById('modalTitle').textContent = design.productName;
             document.getElementById('modalBody').innerHTML = `
-                <img class="modal-image" src="${imageUrl}" 
-                     onerror="this.onerror=null; this.src='${placeholder}'">
-                
-                <div class="item-detail-row">
-                    <span class="label">Design #</span>
-                    <span class="value">${design.designNo}</span>
-                </div>
-                <div class="item-detail-row">
-                    <span class="label">Color</span>
-                    <span class="value">${design.color || 'Various'}</span>
-                </div>
-                <div class="item-detail-row">
-                    <span class="label">Type</span>
-                    <span class="value">${design.garmentType || 'Costume'}</span>
-                </div>
-                <div class="item-detail-row">
-                    <span class="label">Total Pieces</span>
-                    <span class="value">${design.totalPieces}</span>
-                </div>
-                
+                <img class="modal-image" src="${imageUrl}" onerror="this.onerror=null; this.src='${placeholder}'">
+                <div class="item-detail-row"><span class="label">Design #</span><span class="value">${design.designNo}</span></div>
+                <div class="item-detail-row"><span class="label">Color</span><span class="value">${design.color || 'Various'}</span></div>
+                <div class="item-detail-row"><span class="label">Type</span><span class="value">${design.garmentType || 'Costume'}</span></div>
+                <div class="item-detail-row"><span class="label">Total Pieces</span><span class="value">${design.totalPieces}</span></div>
                 <h4 style="margin: 15px 0 10px;">📏 Sizes Available:</h4>
                 <div class="info-box">${sizeSummary}</div>
-                
                 <h4 style="margin: 15px 0 10px;">🔢 Individual Items (Barcodes & Locations):</h4>
                 ${itemsHtml}
-                
                 <div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 8px;">
                     <small>💡 Items with barcodes and locations can be tracked precisely in the warehouse.</small>
                 </div>
             `;
-            
             document.getElementById('detailModal').style.display = 'flex';
         }
 
@@ -661,23 +524,13 @@
             document.getElementById('detailModal').style.display = 'none';
         }
 
-        // ==================== CART FUNCTIONS ====================
         function addToCart(designNo, size, availableQty) {
             const design = inventoryData.find(d => d.designNo === designNo);
             if (!design) return;
-            
-            if (availableQty <= 0) {
-                alert('❌ This size is currently out of stock.');
-                return;
-            }
-            
+            if (availableQty <= 0) { alert('❌ Out of stock.'); return; }
             const qty = parseInt(prompt(`Enter quantity for ${design.productName}\nSize: ${size}\nAvailable: ${availableQty}`, '1'));
             if (isNaN(qty) || qty < 1) return;
-            if (qty > availableQty) {
-                alert(`Only ${availableQty} pieces available in Size ${size}`);
-                return;
-            }
-            
+            if (qty > availableQty) { alert(`Only ${availableQty} pieces available`); return; }
             const existingItem = cart.find(item => item.designNo === designNo && item.size === size);
             if (existingItem) {
                 if (existingItem.quantity + qty > availableQty) {
@@ -686,159 +539,60 @@
                 }
                 existingItem.quantity += qty;
             } else {
-                cart.push({
-                    designNo: designNo,
-                    name: design.productName,
-                    size: size,
-                    quantity: qty,
-                    color: design.color || 'Various',
-                    type: design.garmentType || 'Costume'
-                });
+                cart.push({ designNo, name: design.productName, size, quantity: qty, color: design.color || 'Various', type: design.garmentType || 'Costume' });
             }
-            
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
             updateCartDisplay();
-            alert(`✓ Added ${qty}x ${design.productName} (Size ${size}) to your order`);
+            alert(`✓ Added ${qty}x ${design.productName} (Size ${size})`);
         }
 
         function updateCartDisplay() {
             const cartItemsDiv = document.getElementById('cartItems');
             const cartCount = document.getElementById('cartCount');
             const totalItemsSpan = document.getElementById('totalItems');
-            
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             cartCount.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`;
             totalItemsSpan.textContent = totalItems;
-            
             if (cart.length === 0) {
                 cartItemsDiv.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">Your cart is empty</div>';
                 return;
             }
-            
             cartItemsDiv.innerHTML = cart.map((item, index) => `
                 <div class="cart-item">
-                    <div class="cart-item-details">
-                        <strong>${item.name.substring(0, 30)}</strong>
-                    </div>
-                    <div class="cart-item-details">
-                        <span>Size: ${item.size}</span>
-                        <span>Qty: ${item.quantity}</span>
-                    </div>
+                    <div class="cart-item-details"><strong>${item.name.substring(0, 30)}</strong></div>
+                    <div class="cart-item-details"><span>Size: ${item.size}</span><span>Qty: ${item.quantity}</span></div>
                     <button onclick="removeFromCart(${index})" style="background:#dc3545; color:white; border:none; padding:2px 8px; border-radius:4px; margin-top:5px; font-size:11px;">Remove</button>
                 </div>
             `).join('');
         }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-            updateCartDisplay();
-        }
-
-        function clearCart() {
-            if (confirm('Clear all items from your order?')) {
-                cart = [];
-                sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-                updateCartDisplay();
-            }
-        }
+        function removeFromCart(index) { cart.splice(index, 1); sessionStorage.setItem('schoolCart', JSON.stringify(cart)); updateCartDisplay(); }
+        function clearCart() { if (confirm('Clear all items?')) { cart = []; sessionStorage.setItem('schoolCart', JSON.stringify(cart)); updateCartDisplay(); } }
 
         function placeOrder() {
-            if (cart.length === 0) {
-                alert('Your cart is empty. Please add items to place an order.');
-                return;
-            }
-            
+            if (cart.length === 0) { alert('Cart is empty'); return; }
             const schoolName = sessionStorage.getItem('schoolName');
             const schoolEmail = sessionStorage.getItem('schoolEmail');
             const schoolPhone = sessionStorage.getItem('schoolPhone') || 'Not provided';
             const schoolAddress = sessionStorage.getItem('schoolAddress') || 'Not provided';
-            
-            let orderSummary = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🏫 SCHOOL ORDER REQUEST
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-School Name: ${schoolName}
-Email: ${schoolEmail}
-Phone: ${schoolPhone}
-Address: ${schoolAddress}
-Order Date: ${new Date().toLocaleString()}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📦 ORDER ITEMS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`;
-            
-            let totalItems = 0;
-            cart.forEach(item => {
-                totalItems += item.quantity;
-                orderSummary += `
-${item.name} (Design #${item.designNo})
-  Size: ${item.size} | Quantity: ${item.quantity}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`;
-            });
-            
-            orderSummary += `
-📊 ORDER SUMMARY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Total Items: ${totalItems}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Please confirm availability.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`;
-            
+            let orderSummary = `SCHOOL ORDER\nSchool: ${schoolName}\nEmail: ${schoolEmail}\nPhone: ${schoolPhone}\nAddress: ${schoolAddress}\nDate: ${new Date().toLocaleString()}\n\nITEMS:\n`;
+            cart.forEach(item => { orderSummary += `${item.name} (${item.designNo}) - Size ${item.size} x${item.quantity}\n`; });
             const orderId = 'ORD-' + Date.now();
             const orders = JSON.parse(localStorage.getItem('allOrders') || '[]');
-            orders.push({
-                orderId: orderId,
-                schoolName: schoolName,
-                schoolEmail: schoolEmail,
-                phone: schoolPhone,
-                address: schoolAddress,
-                date: new Date().toISOString(),
-                items: cart,
-                totalItems: totalItems,
-                status: 'pending'
-            });
+            orders.push({ orderId, schoolName, schoolEmail, phone: schoolPhone, address: schoolAddress, date: new Date().toISOString(), items: cart, totalItems: cart.reduce((s, i) => s + i.quantity, 0), status: 'pending' });
             localStorage.setItem('allOrders', JSON.stringify(orders));
-            
-            const subject = encodeURIComponent(`Order Request from ${schoolName} - ${new Date().toLocaleDateString()}`);
+            const subject = encodeURIComponent(`Order from ${schoolName}`);
             const body = encodeURIComponent(orderSummary);
             window.location.href = `mailto:orders@costumestore.com?subject=${subject}&body=${body}`;
-            
-            cart = [];
-            sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-            updateCartDisplay();
-            
-            setTimeout(() => {
-                alert(`✅ ORDER PLACED!\n\nOrder ID: ${orderId}`);
-            }, 1000);
+            cart = []; sessionStorage.setItem('schoolCart', JSON.stringify(cart)); updateCartDisplay();
+            alert('Order sent!');
         }
 
-        // ==================== EVENT LISTENERS ====================
-        document.getElementById('searchInput').addEventListener('input', () => {
-            currentPage = 1;
-            displayCostumes();
-        });
-        document.getElementById('typeFilter').addEventListener('change', () => {
-            currentPage = 1;
-            displayCostumes();
-        });
-        document.getElementById('availabilityFilter').addEventListener('change', () => {
-            currentPage = 1;
-            displayCostumes();
-        });
+        document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; displayCostumes(); });
+        document.getElementById('typeFilter').addEventListener('change', () => { currentPage = 1; displayCostumes(); });
+        document.getElementById('availabilityFilter').addEventListener('change', () => { currentPage = 1; displayCostumes(); });
+        document.getElementById('detailModal').addEventListener('click', function(e) { if (e.target === this) closeDetailModal(); });
 
-        document.getElementById('detailModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeDetailModal();
-            }
-        });
-
-        // ==================== GLOBAL FUNCTIONS ====================
         window.goToPage = goToPage;
         window.showDetails = showDetails;
         window.closeDetailModal = closeDetailModal;
@@ -847,7 +601,6 @@ Total Items: ${totalItems}
         window.clearCart = clearCart;
         window.placeOrder = placeOrder;
 
-        // ==================== INITIALIZE ====================
         loadLocationMaster();
         loadInventory();
         updateCartDisplay();
