@@ -25,36 +25,71 @@
         .header h1 { font-size: 18px; }
         .header-right { display: flex; align-items: center; gap: 12px; font-size: 13px; }
         .logout-btn { background: rgba(255,255,255,0.2); color: white; padding: 5px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; }
-        .cart-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .cart-btn { 
+            background: rgba(255,255,255,0.2); 
+            color: white; 
+            border: none; 
+            padding: 5px 14px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 13px;
+            position: relative;
+        }
+        .cart-btn:hover { background: rgba(255,255,255,0.3); }
+        .cart-badge {
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 1px 6px;
+            font-size: 10px;
+            margin-left: 4px;
+        }
 
-        /* ===== FILTERS ===== */
-        .filters {
+        /* ===== THEME FILTERS ===== */
+        .theme-filters {
             background: white;
             padding: 10px 15px;
             border-radius: 10px;
             margin-bottom: 12px;
             display: flex;
-            gap: 10px;
             flex-wrap: wrap;
+            gap: 8px;
             align-items: center;
         }
-        .filter-input {
+
+        .theme-btn {
+            padding: 6px 16px;
+            background: #f0f0f0;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .theme-btn:hover { background: #e0e0e0; }
+        .theme-btn.active { background: #667eea; color: white; border-color: #667eea; }
+        .theme-btn.all { background: #667eea; color: white; }
+
+        .search-input {
             padding: 6px 12px;
             border: 2px solid #e0e0e0;
             border-radius: 6px;
             font-size: 13px;
             flex: 1;
-            min-width: 100px;
+            min-width: 120px;
+            margin-left: auto;
         }
-        .filter-input:focus { outline: none; border-color: #667eea; }
-        .stats { font-size: 13px; color: #666; }
 
-        /* ===== IMAGE GRID - AUTO FILL ===== */
+        .search-input:focus { outline: none; border-color: #667eea; }
+        .stats { font-size: 13px; color: #666; margin-left: 10px; }
+
+        /* ===== IMAGE GRID ===== */
         .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 20px;
         }
 
         .costume-card {
@@ -90,13 +125,120 @@
             transform: scale(1.04);
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #999;
+        .loading { text-align: center; padding: 40px; color: #999; font-size: 16px; }
+        .no-results { text-align: center; padding: 40px; color: #999; }
+
+        /* ===== CART PAGE (Clean) ===== */
+        .cart-page {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+
+        .cart-page.active { display: block; }
+
+        .cart-page h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .cart-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cart-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #eee;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .cart-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .cart-table .item-name { font-weight: 500; }
+        .cart-table .item-size { color: #888; font-size: 13px; }
+        .cart-table .item-qty { text-align: center; }
+        .cart-table .item-remove { 
+            color: #dc3545; 
+            cursor: pointer; 
+            border: none; 
+            background: none; 
             font-size: 16px;
         }
-        .no-results { text-align: center; padding: 40px; color: #999; }
+        .cart-table .item-remove:hover { color: #c82333; }
+
+        .cart-empty {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
+        .cart-summary {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .cart-total {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .cart-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-order {
+            padding: 8px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-order:hover { background: #43a047; }
+
+        .btn-clear {
+            padding: 8px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-clear:hover { background: #c82333; }
+
+        .btn-close-cart {
+            padding: 8px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-close-cart:hover { background: #5a6268; }
 
         /* ===== MODAL ===== */
         .modal {
@@ -118,7 +260,7 @@
 
         .modal-content {
             background: white;
-            max-width: 600px;
+            max-width: 550px;
             width: 90%;
             border-radius: 16px;
             padding: 20px;
@@ -215,96 +357,16 @@
             margin-top: 4px;
         }
 
-        /* ===== CART ===== */
-        .cart-panel {
-            position: fixed;
-            right: 0;
-            top: 0;
-            width: 320px;
-            background: white;
-            height: 100vh;
-            box-shadow: -4px 0 20px rgba(0,0,0,0.1);
-            z-index: 200;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            overflow-y: auto;
-        }
-
-        .cart-panel.open { transform: translateX(0); }
-
-        .cart-header {
-            background: #667eea;
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-        }
-
-        .cart-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-
-        .cart-items { padding: 15px; }
-        .cart-item {
-            border-bottom: 1px solid #eee;
-            padding: 10px 0;
-            font-size: 13px;
-        }
-
-        .cart-item-details { display: flex; justify-content: space-between; }
-
-        .cart-summary {
-            padding: 15px;
-            border-top: 2px solid #eee;
-            background: #f8f9fa;
-            position: sticky;
-            bottom: 0;
-        }
-
-        .cart-order-btn {
-            width: 100%;
-            padding: 10px;
-            background: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .cart-order-btn:hover { background: #43a047; }
-        .cart-clear-btn {
-            width: 100%;
-            padding: 8px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.4);
-            z-index: 150;
-        }
-
-        .overlay.active { display: block; }
-
         @media (max-width: 768px) {
             .image-grid {
                 grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
                 gap: 6px;
             }
             .header h1 { font-size: 16px; }
-            .cart-panel { width: 100%; }
+            .cart-table { font-size: 13px; }
+            .cart-table th, .cart-table td { padding: 6px 8px; }
+            .theme-filters { flex-direction: column; align-items: stretch; }
+            .search-input { margin-left: 0; }
         }
 
         @media (max-width: 480px) {
@@ -322,18 +384,31 @@
             <h1>🎭 Costume Store</h1>
             <div class="header-right">
                 <span id="schoolName"></span>
-                <button class="cart-btn" onclick="toggleCart()">🛒 <span id="cartCount">0</span></button>
+                <button class="cart-btn" onclick="toggleCartPage()">
+                    🛒 Cart <span class="cart-badge" id="cartBadge">0</span>
+                </button>
                 <a href="logout.html" class="logout-btn">🚪</a>
             </div>
         </div>
 
-        <!-- Filters -->
-        <div class="filters">
-            <input type="text" class="filter-input" id="searchInput" placeholder="🔍 Search design number...">
+        <!-- Theme Filters -->
+        <div class="theme-filters">
+            <button class="theme-btn all active" data-theme="all" onclick="filterByTheme('all')">🏠 All</button>
+            <button class="theme-btn" data-theme="frock" onclick="filterByTheme('frock')">👗 Frocks</button>
+            <button class="theme-btn" data-theme="skirt" onclick="filterByTheme('skirt')">👗 Skirts</button>
+            <button class="theme-btn" data-theme="dress" onclick="filterByTheme('dress')">👗 Dresses</button>
+            <button class="theme-btn" data-theme="top" onclick="filterByTheme('top')">👚 Tops</button>
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search design number...">
             <span class="stats" id="imageCount">Loading...</span>
         </div>
 
-        <!-- Image Grid - ALL IMAGES -->
+        <!-- Cart Page -->
+        <div class="cart-page" id="cartPage">
+            <h2>🛒 Your Order</h2>
+            <div id="cartContent"></div>
+        </div>
+
+        <!-- Image Grid -->
         <div class="image-grid" id="imageGrid">
             <div class="loading">Loading images...</div>
         </div>
@@ -348,21 +423,6 @@
         </div>
     </div>
 
-    <!-- Cart -->
-    <div class="overlay" id="cartOverlay" onclick="toggleCart()"></div>
-    <div class="cart-panel" id="cartPanel">
-        <div class="cart-header">
-            <span>🛒 My Order</span>
-            <button class="cart-close" onclick="toggleCart()">×</button>
-        </div>
-        <div class="cart-items" id="cartItems"><div style="text-align:center;color:#999;padding:20px;">Your cart is empty</div></div>
-        <div class="cart-summary">
-            <div><strong>Total Items:</strong> <span id="totalItems">0</span></div>
-            <button class="cart-order-btn" onclick="placeOrder()">📧 Send Order</button>
-            <button class="cart-clear-btn" onclick="clearCart()">🗑️ Clear Cart</button>
-        </div>
-    </div>
-
     <script>
         // ==================== CHECK LOGIN ====================
         if (!sessionStorage.getItem('loggedIn')) {
@@ -374,10 +434,13 @@
         const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
         const BUCKET_NAME = 'costume-images';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg';
+        let allDesigns = [];
         let imageList = [];
         let inventoryData = {};
         let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
         let locationMaster = {};
+        let currentTheme = 'all';
+        let isCartOpen = false;
 
         function getImageUrl(designNo) {
             return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${designNo}.jpg`;
@@ -390,6 +453,13 @@
                 const data = JSON.parse(saved);
                 data.forEach(item => {
                     inventoryData[item.designNo] = item;
+                    const type = (item.garmentType || '').toLowerCase();
+                    const themes = ['frock', 'skirt', 'dress', 'top'];
+                    allDesigns.push({
+                        designNo: item.designNo,
+                        theme: themes.includes(type) ? type : 'other',
+                        productName: item.productName || item.designNo
+                    });
                 });
             }
         }
@@ -410,13 +480,12 @@
             return null;
         }
 
-        // ==================== LOAD ALL IMAGES (NO PAGINATION) ====================
+        // ==================== LOAD IMAGES ====================
         async function loadImages() {
             try {
                 const grid = document.getElementById('imageGrid');
                 grid.innerHTML = '<div class="loading">📸 Loading images...</div>';
 
-                // Get image list from Supabase table
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/image_list?select=design_no`, {
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
@@ -432,26 +501,124 @@
                 }
 
                 document.getElementById('imageCount').textContent = imageList.length + ' images';
-
-                // ✅ DISPLAY ALL IMAGES - NO PAGINATION
-                grid.innerHTML = imageList.map(designNo => `
-                    <div class="costume-card" data-design="${designNo}" onclick="showDetails('${designNo}')">
-                        <div class="image-container">
-                            <img class="costume-image" 
-                                 src="${getImageUrl(designNo)}" 
-                                 alt="${designNo}"
-                                 loading="lazy"
-                                 onerror="this.style.display='none'">
-                        </div>
-                    </div>
-                `).join('');
-
-                console.log('✅ Loaded', imageList.length, 'images');
+                applyFilters();
 
             } catch (err) {
                 console.error('Error:', err);
                 document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ Error loading images.</div>';
             }
+        }
+
+        // ==================== FILTERS ====================
+        function filterByTheme(theme) {
+            currentTheme = theme;
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const grid = document.getElementById('imageGrid');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = imageList;
+
+            if (currentTheme !== 'all') {
+                const themeDesigns = allDesigns.filter(d => d.theme === currentTheme).map(d => d.designNo);
+                filtered = filtered.filter(d => themeDesigns.includes(d));
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(d => d.includes(searchTerm));
+            }
+
+            document.getElementById('imageCount').textContent = filtered.length + ' images';
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="no-results">No costumes found.</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(designNo => `
+                <div class="costume-card" data-design="${designNo}" onclick="showDetails('${designNo}')">
+                    <div class="image-container">
+                        <img class="costume-image" 
+                             src="${getImageUrl(designNo)}" 
+                             alt="${designNo}"
+                             loading="lazy"
+                             onerror="this.style.display='none'">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+        // ==================== CART PAGE ====================
+        function toggleCartPage() {
+            const cartPage = document.getElementById('cartPage');
+            isCartOpen = !isCartOpen;
+            cartPage.classList.toggle('active', isCartOpen);
+            if (isCartOpen) renderCart();
+        }
+
+        function renderCart() {
+            const content = document.getElementById('cartContent');
+
+            if (cart.length === 0) {
+                content.innerHTML = '<div class="cart-empty">Your cart is empty. Browse costumes to add items.</div>';
+                return;
+            }
+
+            let html = `
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Size</th>
+                            <th style="text-align:center;">Qty</th>
+                            <th style="text-align:center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            cart.forEach((item, i) => {
+                html += `
+                    <tr>
+                        <td><span class="item-name">${item.name}</span><br><span style="font-size:11px;color:#999;">#${item.designNo}</span></td>
+                        <td><span class="item-size">${item.size}</span></td>
+                        <td style="text-align:center;">${item.quantity}</td>
+                        <td style="text-align:center;">
+                            <button class="item-remove" onclick="removeFromCart(${i})" title="Remove">✕</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
+
+            html += `
+                    </tbody>
+                </table>
+                <div class="cart-summary">
+                    <div class="cart-total">Total Items: ${totalItems}</div>
+                    <div class="cart-actions">
+                        <button class="btn-close-cart" onclick="toggleCartPage()">Close</button>
+                        <button class="btn-clear" onclick="clearCart()">Clear</button>
+                        <button class="btn-order" onclick="placeOrder()">📧 Send Order</button>
+                    </div>
+                </div>
+            `;
+
+            content.innerHTML = html;
+            updateCartBadge();
+        }
+
+        function updateCartBadge() {
+            const total = cart.reduce((s, i) => s + i.quantity, 0);
+            document.getElementById('cartBadge').textContent = total;
         }
 
         // ==================== SHOW DETAILS ====================
@@ -508,29 +675,7 @@
             document.getElementById('detailModal').classList.remove('active');
         }
 
-        // ==================== SEARCH ====================
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const term = this.value.toLowerCase();
-            const cards = document.querySelectorAll('.costume-card');
-            let visible = 0;
-            cards.forEach(card => {
-                const design = card.getAttribute('data-design') || '';
-                if (design.includes(term)) {
-                    card.style.display = '';
-                    visible++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            document.getElementById('imageCount').textContent = visible + ' images (of ' + imageList.length + ')';
-        });
-
-        // ==================== CART ====================
-        function toggleCart() {
-            document.getElementById('cartPanel').classList.toggle('open');
-            document.getElementById('cartOverlay').classList.toggle('active');
-        }
-
+        // ==================== CART FUNCTIONS ====================
         function addToCart(designNo, size, availableQty) {
             const data = inventoryData[designNo];
             if (!data) { alert('No data available for this design'); return; }
@@ -561,42 +706,27 @@
             }
 
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-            updateCartDisplay();
+            updateCartBadge();
+            if (isCartOpen) renderCart();
             alert(`✓ Added ${qty}x ${data.productName} (Size ${size})`);
             closeDetailModal();
-        }
-
-        function updateCartDisplay() {
-            const totalItems = cart.reduce((s, i) => s + i.quantity, 0);
-            document.getElementById('cartCount').textContent = totalItems;
-            document.getElementById('totalItems').textContent = totalItems;
-
-            const itemsDiv = document.getElementById('cartItems');
-            if (cart.length === 0) {
-                itemsDiv.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">Your cart is empty</div>';
-                return;
-            }
-
-            itemsDiv.innerHTML = cart.map((item, i) => `
-                <div class="cart-item">
-                    <div class="cart-item-details"><strong>${item.name.substring(0, 25)}</strong><span>${item.quantity}</span></div>
-                    <div style="font-size:11px;color:#888;">Size: ${item.size}</div>
-                    <button onclick="removeFromCart(${i})" style="background:#dc3545;color:white;border:none;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:4px;">Remove</button>
-                </div>
-            `).join('');
         }
 
         function removeFromCart(index) {
             cart.splice(index, 1);
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-            updateCartDisplay();
+            updateCartBadge();
+            renderCart();
+            if (cart.length === 0) toggleCartPage();
         }
 
         function clearCart() {
             if (!confirm('Clear all items?')) return;
             cart = [];
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-            updateCartDisplay();
+            updateCartBadge();
+            renderCart();
+            if (isCartOpen) toggleCartPage();
         }
 
         function placeOrder() {
@@ -615,9 +745,10 @@
             window.location.href = `mailto:orders@costumestore.com?subject=${subject}&body=${encodeURIComponent(summary)}`;
             cart = [];
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
-            updateCartDisplay();
+            updateCartBadge();
+            renderCart();
+            if (isCartOpen) toggleCartPage();
             alert('Order sent!');
-            toggleCart();
         }
 
         // ==================== EVENTS ====================
@@ -632,13 +763,14 @@
         window.removeFromCart = removeFromCart;
         window.clearCart = clearCart;
         window.placeOrder = placeOrder;
-        window.toggleCart = toggleCart;
+        window.toggleCartPage = toggleCartPage;
+        window.filterByTheme = filterByTheme;
 
         // ==================== INIT ====================
         loadLocationMaster();
         loadInventoryData();
         loadImages();
-        updateCartDisplay();
+        updateCartBadge();
     </script>
 </body>
 </html>
