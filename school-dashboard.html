@@ -334,7 +334,6 @@
             const saved = localStorage.getItem('inventoryData');
             if (saved) {
                 const data = JSON.parse(saved);
-                // Convert array to object for faster lookup by designNo
                 data.forEach(item => {
                     inventoryData[item.designNo] = item;
                 });
@@ -342,33 +341,31 @@
             }
         }
 
-        // ==================== GET IMAGES FROM SUPABASE ====================
+        // ==================== GET IMAGES FROM SUPABASE (Using image_list table) ====================
         async function loadImages() {
             try {
                 const grid = document.getElementById('imageGrid');
                 grid.innerHTML = '<div class="loading">📸 Loading images...</div>';
 
-                // 1. Get all images from Supabase Storage
-                const response = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET_NAME}`, {
-                    method: 'POST',
+                // Get image list from Supabase table (this works!)
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/image_list?select=design_no`, {
+                    method: 'GET',
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ limit: 10000, offset: 0, sortBy: { column: 'name', order: 'asc' } })
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
                 });
                 const data = await response.json();
-                const imageNames = data.filter(file => file.name.endsWith('.jpg')).map(file => file.name.replace('.jpg', ''));
+                const imageNames = data.map(item => item.design_no);
 
                 console.log('📸 Images found:', imageNames.length);
 
                 if (imageNames.length === 0) {
-                    grid.innerHTML = '<div class="no-results">No images found in Supabase.</div>';
+                    grid.innerHTML = '<div class="no-results">No images found. Please contact admin.</div>';
                     return;
                 }
 
-                // 2. Build display list - images first, data in background
+                // Build display list - images first, data in background
                 const designsToShow = imageNames.map(designNo => {
                     const data = inventoryData[designNo];
                     return {
@@ -380,16 +377,15 @@
                     };
                 });
 
-                // 3. Paginate
+                // Paginate
                 const totalPages = Math.ceil(designsToShow.length / itemsPerPage);
                 const start = (currentPage - 1) * itemsPerPage;
                 const end = start + itemsPerPage;
                 const pageItems = designsToShow.slice(start, end);
 
                 document.getElementById('totalDesigns').textContent = designsToShow.length;
-                document.getElementById('totalDesigns').textContent = designsToShow.length;
 
-                // 4. Display
+                // Display
                 grid.innerHTML = pageItems.map(item => {
                     const imageUrl = getImageUrl(item.designNo);
                     let stockClass = 'stock-unknown';
@@ -420,7 +416,7 @@
                     `;
                 }).join('');
 
-                // 5. Pagination
+                // Pagination
                 const paginationDiv = document.getElementById('pagination');
                 if (totalPages <= 1) {
                     paginationDiv.innerHTML = '';
@@ -438,7 +434,7 @@
 
             } catch (err) {
                 console.error('Error loading images:', err);
-                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ Error loading images.</div>';
+                document.getElementById('imageGrid').innerHTML = '<div class="no-results">⚠️ Error loading images. Please check console.</div>';
             }
         }
 
@@ -453,7 +449,6 @@
             const data = inventoryData[designNo];
             const imageUrl = getImageUrl(designNo);
             
-            // Check if data exists
             if (!data) {
                 document.getElementById('modalTitle').textContent = `Design #${designNo}`;
                 document.getElementById('modalBody').innerHTML = `
@@ -469,13 +464,11 @@
             const sizes = data.sizes || {};
             const totalPieces = data.totalPieces || Object.values(sizes).reduce((a, b) => a + b, 0);
 
-            // Build size buttons
             let sizeHtml = '';
             for (const [size, qty] of Object.entries(sizes)) {
                 sizeHtml += `<button class="modal-size-btn" onclick="addToCart('${designNo}', '${size}', ${qty})">${size} (${qty})</button>`;
             }
 
-            // Build location info
             let locationHtml = '';
             if (data.items && data.items.length > 0) {
                 const locs = data.items.map(item => getLocationDisplay(item.locCode)).filter(l => l && l !== 'No location');
@@ -550,10 +543,7 @@
 
             itemsDiv.innerHTML = cart.map((item, i) => `
                 <div class="cart-item">
-                    <div class="cart-item-details">
-                        <strong>${item.name.substring(0, 25)}</strong>
-                        <span>${item.quantity}</span>
-                    </div>
+                    <div class="cart-item-details"><strong>${item.name.substring(0, 25)}</strong><span>${item.quantity}</span></div>
                     <div style="font-size:11px;color:#888;">Size: ${item.size}</div>
                     <button onclick="removeFromCart(${i})" style="background:#dc3545;color:white;border:none;padding:2px 8px;border-radius:4px;font-size:11px;margin-top:4px;">Remove</button>
                 </div>
