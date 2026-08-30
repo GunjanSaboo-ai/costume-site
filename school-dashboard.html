@@ -9,7 +9,6 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 10px; }
         .container { max-width: 100%; margin: 0 auto; }
 
-        /* ===== HEADER ===== */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -33,43 +32,91 @@
             border-radius: 6px; 
             cursor: pointer; 
             font-size: 13px;
-            position: relative;
         }
+        .cart-badge { background: #dc3545; color: white; border-radius: 50%; padding: 1px 6px; font-size: 10px; margin-left: 4px; }
         .cart-btn:hover { background: rgba(255,255,255,0.3); }
-        .cart-badge {
-            background: #dc3545;
-            color: white;
-            border-radius: 50%;
-            padding: 1px 6px;
+
+        /* Theme Browser */
+        .theme-browser {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .theme-search {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .theme-search input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            min-width: 150px;
+        }
+
+        .theme-search input:focus { outline: none; border-color: #667eea; }
+
+        .theme-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+
+        .theme-tag {
+            padding: 4px 14px;
+            background: #f0f0f0;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .theme-tag:hover { background: #e0e0e0; }
+        .theme-tag.active { background: #667eea; color: white; border-color: #667eea; }
+        .theme-tag.all { background: #667eea; color: white; }
+
+        .theme-tag .count {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 0 6px;
             font-size: 10px;
             margin-left: 4px;
         }
 
-        /* ===== THEME FILTERS ===== */
-        .theme-filters {
+        .theme-tag.active .count { background: rgba(255,255,255,0.2); }
+
+        .selected-theme {
+            font-size: 14px;
+            color: #666;
+            padding: 6px 0;
+            border-top: 1px solid #eee;
+            margin-top: 6px;
+        }
+
+        .selected-theme strong { color: #333; }
+
+        /* Search Input */
+        .search-row {
             background: white;
             padding: 10px 15px;
             border-radius: 10px;
             margin-bottom: 12px;
             display: flex;
+            gap: 10px;
             flex-wrap: wrap;
-            gap: 8px;
             align-items: center;
         }
-
-        .theme-btn {
-            padding: 6px 16px;
-            background: #f0f0f0;
-            border: 2px solid transparent;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .theme-btn:hover { background: #e0e0e0; }
-        .theme-btn.active { background: #667eea; color: white; border-color: #667eea; }
-        .theme-btn.all { background: #667eea; color: white; }
 
         .search-input {
             padding: 6px 12px;
@@ -78,11 +125,10 @@
             font-size: 13px;
             flex: 1;
             min-width: 120px;
-            margin-left: auto;
         }
 
         .search-input:focus { outline: none; border-color: #667eea; }
-        .stats { font-size: 13px; color: #666; margin-left: 10px; }
+        .stats { font-size: 13px; color: #666; }
 
         /* ===== IMAGE GRID ===== */
         .image-grid {
@@ -121,14 +167,12 @@
             transition: transform 0.3s;
         }
 
-        .costume-card:hover .costume-image {
-            transform: scale(1.04);
-        }
+        .costume-card:hover .costume-image { transform: scale(1.04); }
 
         .loading { text-align: center; padding: 40px; color: #999; font-size: 16px; }
         .no-results { text-align: center; padding: 40px; color: #999; }
 
-        /* ===== CART PAGE (Clean) ===== */
+        /* ===== CART PAGE ===== */
         .cart-page {
             display: none;
             background: white;
@@ -139,51 +183,17 @@
         }
 
         .cart-page.active { display: block; }
+        .cart-page h2 { font-size: 20px; margin-bottom: 15px; color: #333; }
 
-        .cart-page h2 {
-            font-size: 20px;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .cart-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .cart-table th {
-            text-align: left;
-            padding: 10px 12px;
-            background: #f8f9fa;
-            border-bottom: 2px solid #eee;
-            font-size: 13px;
-            color: #666;
-        }
-
-        .cart-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-            vertical-align: middle;
-        }
-
+        .cart-table { width: 100%; border-collapse: collapse; }
+        .cart-table th { text-align: left; padding: 10px 12px; background: #f8f9fa; border-bottom: 2px solid #eee; font-size: 13px; color: #666; }
+        .cart-table td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
         .cart-table .item-name { font-weight: 500; }
         .cart-table .item-size { color: #888; font-size: 13px; }
-        .cart-table .item-qty { text-align: center; }
-        .cart-table .item-remove { 
-            color: #dc3545; 
-            cursor: pointer; 
-            border: none; 
-            background: none; 
-            font-size: 16px;
-        }
+        .cart-table .item-remove { color: #dc3545; cursor: pointer; border: none; background: none; font-size: 16px; }
         .cart-table .item-remove:hover { color: #c82333; }
 
-        .cart-empty {
-            text-align: center;
-            padding: 30px;
-            color: #999;
-        }
+        .cart-empty { text-align: center; padding: 30px; color: #999; }
 
         .cart-summary {
             margin-top: 15px;
@@ -196,48 +206,14 @@
             gap: 10px;
         }
 
-        .cart-total {
-            font-size: 16px;
-            font-weight: bold;
-        }
+        .cart-total { font-size: 16px; font-weight: bold; }
+        .cart-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-        .cart-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-order {
-            padding: 8px 20px;
-            background: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
+        .btn-order { padding: 8px 20px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-order:hover { background: #43a047; }
-
-        .btn-clear {
-            padding: 8px 20px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
+        .btn-clear { padding: 8px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; }
         .btn-clear:hover { background: #c82333; }
-
-        .btn-close-cart {
-            padding: 8px 20px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
+        .btn-close-cart { padding: 8px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; }
         .btn-close-cart:hover { background: #5a6268; }
 
         /* ===== MODAL ===== */
@@ -283,16 +259,8 @@
 
         .modal-close:hover { color: #333; }
 
-        .modal-image {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 12px;
-        }
-
-        .modal-info {
-            font-size: 14px;
-            color: #555;
-        }
+        .modal-image { width: 100%; border-radius: 10px; margin-bottom: 12px; }
+        .modal-info { font-size: 14px; color: #555; }
 
         .modal-info-row {
             display: flex;
@@ -315,13 +283,7 @@
             text-align: center;
         }
 
-        .modal-sizes {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
-        }
-
+        .modal-sizes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
         .modal-size-btn {
             background: #f0f0f0;
             border: 1px solid #ddd;
@@ -347,7 +309,6 @@
         }
 
         .modal-add-btn:hover { background: #43a047; }
-
         .modal-location {
             font-size: 12px;
             color: #555;
@@ -358,22 +319,15 @@
         }
 
         @media (max-width: 768px) {
-            .image-grid {
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-                gap: 6px;
-            }
+            .image-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
             .header h1 { font-size: 16px; }
             .cart-table { font-size: 13px; }
             .cart-table th, .cart-table td { padding: 6px 8px; }
-            .theme-filters { flex-direction: column; align-items: stretch; }
-            .search-input { margin-left: 0; }
+            .theme-tags { max-height: 80px; }
         }
 
         @media (max-width: 480px) {
-            .image-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                gap: 4px;
-            }
+            .image-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 4px; }
         }
     </style>
 </head>
@@ -391,14 +345,21 @@
             </div>
         </div>
 
-        <!-- Theme Filters -->
-        <div class="theme-filters">
-            <button class="theme-btn all active" data-theme="all" onclick="filterByTheme('all')">🏠 All</button>
-            <button class="theme-btn" data-theme="frock" onclick="filterByTheme('frock')">👗 Frocks</button>
-            <button class="theme-btn" data-theme="skirt" onclick="filterByTheme('skirt')">👗 Skirts</button>
-            <button class="theme-btn" data-theme="dress" onclick="filterByTheme('dress')">👗 Dresses</button>
-            <button class="theme-btn" data-theme="top" onclick="filterByTheme('top')">👚 Tops</button>
-            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search design number...">
+        <!-- Theme Browser -->
+        <div class="theme-browser">
+            <div class="theme-search">
+                <input type="text" id="themeSearch" placeholder="🔍 Search themes..." oninput="filterThemes()">
+                <button class="theme-tag all active" data-theme="all" onclick="selectTheme('all')">🏠 All</button>
+            </div>
+            <div class="theme-tags" id="themeTags">
+                <div class="loading">Loading themes...</div>
+            </div>
+            <div class="selected-theme" id="selectedThemeDisplay">Showing: <strong>All Designs</strong></div>
+        </div>
+
+        <!-- Search Row -->
+        <div class="search-row">
+            <input type="text" class="search-input" id="designSearch" placeholder="🔍 Search by design number...">
             <span class="stats" id="imageCount">Loading...</span>
         </div>
 
@@ -434,16 +395,92 @@
         const SUPABASE_URL = 'https://vpvewqyfbtqpckcjlxsg.supabase.co';
         const BUCKET_NAME = 'costume-images';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwdmV3cXlmYnRxcGNrY2pseHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4OTgwNTgsImV4cCI6MjEwMzQ3NDA1OH0.i16cqjPTsrXozi7IQygVTC-YtPaZwRYxgOPbTUu9dQg';
-        let allDesigns = [];
+        
         let imageList = [];
         let inventoryData = {};
         let cart = JSON.parse(sessionStorage.getItem('schoolCart') || '[]');
         let locationMaster = {};
-        let currentTheme = 'all';
-        let isCartOpen = false;
+        
+        // Theme data
+        let themeMaster = {};
+        let themeNames = {};
+        let themeList = [];
+        let selectedTheme = 'all';
+        let themeDesigns = {};
 
         function getImageUrl(designNo) {
             return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${designNo}.jpg`;
+        }
+
+        // ==================== LOAD THEMES ====================
+        async function loadThemes() {
+            try {
+                const response = await fetch('/api/themes');
+                const result = await response.json();
+                if (result.success) {
+                    themeList = result.themes;
+                    renderThemes();
+                }
+            } catch (err) {
+                console.error('Error loading themes:', err);
+                document.getElementById('themeTags').innerHTML = '<div class="loading">Failed to load themes</div>';
+            }
+        }
+
+        function renderThemes() {
+            const container = document.getElementById('themeTags');
+            if (themeList.length === 0) {
+                container.innerHTML = '<div class="loading">No themes available</div>';
+                return;
+            }
+
+            container.innerHTML = themeList.map(theme => `
+                <button class="theme-tag" data-theme="${theme.id}" onclick="selectTheme('${theme.id}')">
+                    ${theme.name} <span class="count">${theme.count}</span>
+                </button>
+            `).join('');
+        }
+
+        function filterThemes() {
+            const search = document.getElementById('themeSearch').value.toLowerCase();
+            const tags = document.querySelectorAll('.theme-tag:not(.all)');
+            tags.forEach(tag => {
+                const name = tag.textContent.toLowerCase();
+                tag.style.display = name.includes(search) ? '' : 'none';
+            });
+        }
+
+        async function selectTheme(themeId) {
+            selectedTheme = themeId;
+            
+            // Update UI
+            document.querySelectorAll('.theme-tag').forEach(tag => {
+                tag.classList.toggle('active', tag.dataset.theme === themeId);
+            });
+            
+            // Update display
+            const display = document.getElementById('selectedThemeDisplay');
+            if (themeId === 'all') {
+                display.innerHTML = 'Showing: <strong>All Designs</strong>';
+                applyFilters();
+                return;
+            }
+            
+            // Find theme name
+            const theme = themeList.find(t => t.id === themeId);
+            display.innerHTML = `Showing: <strong>${theme ? theme.name : themeId}</strong> (${theme ? theme.count : 0} designs)`;
+            
+            // Get designs for this theme
+            try {
+                const response = await fetch(`/api/themes/${themeId}`);
+                const result = await response.json();
+                if (result.success) {
+                    themeDesigns = result.designs;
+                    applyFilters();
+                }
+            } catch (err) {
+                console.error('Error loading theme designs:', err);
+            }
         }
 
         // ==================== LOAD DATA ====================
@@ -453,14 +490,8 @@
                 const data = JSON.parse(saved);
                 data.forEach(item => {
                     inventoryData[item.designNo] = item;
-                    const type = (item.garmentType || '').toLowerCase();
-                    const themes = ['frock', 'skirt', 'dress', 'top'];
-                    allDesigns.push({
-                        designNo: item.designNo,
-                        theme: themes.includes(type) ? type : 'other',
-                        productName: item.productName || item.designNo
-                    });
                 });
+                console.log('✅ Loaded inventory data:', Object.keys(inventoryData).length);
             }
         }
 
@@ -509,26 +540,19 @@
             }
         }
 
-        // ==================== FILTERS ====================
-        function filterByTheme(theme) {
-            currentTheme = theme;
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.theme === theme);
-            });
-            applyFilters();
-        }
-
+        // ==================== APPLY FILTERS ====================
         function applyFilters() {
             const grid = document.getElementById('imageGrid');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const searchTerm = document.getElementById('designSearch').value.toLowerCase();
 
-            let filtered = imageList;
+            let filtered = [...imageList];
 
-            if (currentTheme !== 'all') {
-                const themeDesigns = allDesigns.filter(d => d.theme === currentTheme).map(d => d.designNo);
+            // Filter by theme
+            if (selectedTheme !== 'all') {
                 filtered = filtered.filter(d => themeDesigns.includes(d));
             }
 
+            // Filter by search
             if (searchTerm) {
                 filtered = filtered.filter(d => d.includes(searchTerm));
             }
@@ -536,7 +560,7 @@
             document.getElementById('imageCount').textContent = filtered.length + ' images';
 
             if (filtered.length === 0) {
-                grid.innerHTML = '<div class="no-results">No costumes found.</div>';
+                grid.innerHTML = '<div class="no-results">No costumes found for this theme.</div>';
                 return;
             }
 
@@ -553,33 +577,27 @@
             `).join('');
         }
 
-        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('designSearch').addEventListener('input', applyFilters);
 
-        // ==================== CART PAGE ====================
+        // ==================== CART ====================
         function toggleCartPage() {
             const cartPage = document.getElementById('cartPage');
-            isCartOpen = !isCartOpen;
-            cartPage.classList.toggle('active', isCartOpen);
-            if (isCartOpen) renderCart();
+            const isOpen = cartPage.classList.toggle('active');
+            if (isOpen) renderCart();
         }
 
         function renderCart() {
             const content = document.getElementById('cartContent');
 
             if (cart.length === 0) {
-                content.innerHTML = '<div class="cart-empty">Your cart is empty. Browse costumes to add items.</div>';
+                content.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';
                 return;
             }
 
             let html = `
                 <table class="cart-table">
                     <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Size</th>
-                            <th style="text-align:center;">Qty</th>
-                            <th style="text-align:center;">Action</th>
-                        </tr>
+                        <tr><th>Item</th><th>Size</th><th style="text-align:center;">Qty</th><th style="text-align:center;">Action</th></tr>
                     </thead>
                     <tbody>
             `;
@@ -661,7 +679,7 @@
                 `;
             } else {
                 html = `
-                    <div class="modal-no-data">⚠️ No inventory data available for this design.</div>
+                    <div class="modal-no-data">⚠️ No inventory data available.</div>
                     <div class="modal-info-row"><span class="label">Design #</span><span class="value">${designNo}</span></div>
                     <button class="modal-add-btn" onclick="closeDetailModal()">Close</button>
                 `;
@@ -678,7 +696,7 @@
         // ==================== CART FUNCTIONS ====================
         function addToCart(designNo, size, availableQty) {
             const data = inventoryData[designNo];
-            if (!data) { alert('No data available for this design'); return; }
+            if (!data) { alert('No data available'); return; }
 
             if (!size) {
                 const sizeOptions = Object.keys(data.sizes || {});
@@ -707,7 +725,7 @@
 
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
             updateCartBadge();
-            if (isCartOpen) renderCart();
+            if (document.getElementById('cartPage').classList.contains('active')) renderCart();
             alert(`✓ Added ${qty}x ${data.productName} (Size ${size})`);
             closeDetailModal();
         }
@@ -717,7 +735,7 @@
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
             updateCartBadge();
             renderCart();
-            if (cart.length === 0) toggleCartPage();
+            if (cart.length === 0) document.getElementById('cartPage').classList.remove('active');
         }
 
         function clearCart() {
@@ -726,7 +744,7 @@
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
             updateCartBadge();
             renderCart();
-            if (isCartOpen) toggleCartPage();
+            document.getElementById('cartPage').classList.remove('active');
         }
 
         function placeOrder() {
@@ -747,7 +765,7 @@
             sessionStorage.setItem('schoolCart', JSON.stringify(cart));
             updateCartBadge();
             renderCart();
-            if (isCartOpen) toggleCartPage();
+            document.getElementById('cartPage').classList.remove('active');
             alert('Order sent!');
         }
 
@@ -764,11 +782,13 @@
         window.clearCart = clearCart;
         window.placeOrder = placeOrder;
         window.toggleCartPage = toggleCartPage;
-        window.filterByTheme = filterByTheme;
+        window.selectTheme = selectTheme;
+        window.filterThemes = filterThemes;
 
         // ==================== INIT ====================
         loadLocationMaster();
         loadInventoryData();
+        loadThemes();
         loadImages();
         updateCartBadge();
     </script>
